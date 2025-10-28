@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using TurnosMedicos.Models;
 using TurnosMedicos.Data;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace TurnosMedicos.Controllers
 {
@@ -15,6 +16,15 @@ namespace TurnosMedicos.Controllers
         {
             CargarSelects();
             return base.Crear();
+        }
+        public override async Task<IActionResult> Index()
+        {
+            var medicos = await _context.Set<Medico>()
+                .Include(m => m.Especialidad)
+                .Include(m => m.Consultorio)
+                .ToListAsync();
+
+            return View(medicos);
         }
 
         // POST: Crear

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TurnosMedicos.Models
 {
@@ -17,10 +18,12 @@ namespace TurnosMedicos.Models
         public int Matricula { get; set; }
 
         [Required]
+        [ForeignKey(nameof(Especialidad))]
         public int IdEspecialidad { get; set; }
         public Especialidad? Especialidad { get; set; }
 
         [Required]
+        [ForeignKey(nameof(Consultorio))]
         public int IdConsultorio { get; set; }
         public Consultorio? Consultorio { get; set; }
 
