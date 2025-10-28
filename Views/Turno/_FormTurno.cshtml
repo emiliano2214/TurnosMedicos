@@ -2,13 +2,13 @@
 
 <div class="mb-3">
     <label asp-for="IdPaciente" class="form-label"></label>
-    <select asp-for="IdPaciente" asp-items="ViewBag.Pacientes" class="form-control"></select>
+    <select asp-for="IdPaciente" asp-items="(IEnumerable<SelectListItem>)ViewBag.Pacientes" class="form-control"></select>
     <span asp-validation-for="IdPaciente" class="text-danger"></span>
 </div>
 
 <div class="mb-3">
     <label asp-for="IdMedico" class="form-label"></label>
-    <select asp-for="IdMedico" asp-items="ViewBag.Medicos" class="form-control"></select>
+    <select asp-for="IdMedico" asp-items="(IEnumerable<SelectListItem>)ViewBag.Medicos" class="form-control"></select>
     <span asp-validation-for="IdMedico" class="text-danger"></span>
 </div>
 

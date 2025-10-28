@@ -6,17 +6,18 @@
 <h2 class="text-danger">¿Eliminar Turno?</h2>
 
 <div class="alert alert-warning mt-3 mb-4">
-    ¿Estás seguro de eliminar el turno del paciente con ID <strong>@Model.IdPaciente</strong>
-    con el médico ID <strong>@Model.IdMedico</strong> en la fecha <strong>@Model.FechaHora</strong>?
+    <p>
+        ¿Estás seguro de eliminar el turno de
+        <strong>@(Model.Paciente != null ? Model.Paciente.Nombre + " " + Model.Paciente.Apellido : $"Paciente #{Model.IdPaciente}")</strong>
+        con
+        <strong>@(Model.Medico != null ? Model.Medico.Nombre + " " + Model.Medico.Apellido : $"Médico #{Model.IdMedico}")</strong>
+        el día <strong>@Model.FechaHora.ToString("g")</strong>?
+    </p>
 </div>
 
 <form asp-action="Borrar" method="post">
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="IdTurno" />
-    <partial name="_FormTurno" model="Model" />
     <button type="submit" class="btn btn-danger">Eliminar</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

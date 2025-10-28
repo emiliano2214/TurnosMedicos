@@ -23,8 +23,8 @@
         {
             <tr>
                 <td>@t.IdTurno</td>
-                <td>@($"{t.Paciente?.Nombre} {t.Paciente?.Apellido}" ?? "No asignado")</td>
-                <td>@($"{t.Medico?.Nombre} {t.Medico?.Apellido}" ?? "No asignado")</td>
+                <td>@(t.Paciente != null ? t.Paciente.Nombre + " " + t.Paciente.Apellido : "No asignado")</td>
+                <td>@(t.Medico != null ? t.Medico.Nombre + " " + t.Medico.Apellido : "No asignado")</td>
                 <td>@t.FechaHora.ToString("g")</td>
                 <td>@t.Estado</td>
                 <td>

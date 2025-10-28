@@ -1,7 +1,7 @@
 ﻿@model TurnosMedicos.Models.HistoriaClinica
 
 
-<<div class="mb-3">
+<div class="mb-3">
     <label asp-for="IdPaciente" class="form-label"></label>
     <select asp-for="IdPaciente" asp-items="ViewBag.Pacientes" class="form-control"></select>
     <span asp-validation-for="IdPaciente" class="text-danger"></span>

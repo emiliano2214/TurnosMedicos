@@ -5,7 +5,7 @@ using TurnosMedicos.Models.ViewModels;
 
 namespace TurnosMedicos.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<UsuarioExt>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

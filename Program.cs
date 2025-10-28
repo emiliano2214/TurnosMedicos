@@ -10,7 +10,6 @@ namespace TurnosMedicos
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Configuración de servicios
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -19,15 +18,31 @@ namespace TurnosMedicos
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-                options.SignIn.RequireConfirmedAccount = true)
+            // ⬇️ Identity con UsuarioExt y Roles
+            builder.Services
+                .AddDefaultIdentity<UsuarioExt>(opts =>
+                {
+                    opts.SignIn.RequireConfirmedAccount = true;
+                })
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            // ⬇️ Claims factory para PacienteId/MedicoId/DisplayName
+            builder.Services.AddScoped<IUserClaimsPrincipalFactory<UsuarioExt>, AppClaimsFactory>();
+
+            // ⬇️ Policies por rol
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("EsAdmin", p => p.RequireRole("Admin"));
+                options.AddPolicy("Staff", p => p.RequireRole("Administrativo"));
+                options.AddPolicy("EsMedico", p => p.RequireRole("Medico"));
+                options.AddPolicy("EsPaciente", p => p.RequireRole("Paciente"));
+            });
 
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
-            // Configuración del pipeline
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
@@ -43,21 +58,20 @@ namespace TurnosMedicos
 
             app.UseRouting();
 
-            app.UseAuthentication(); // ✅ Asegurate de tener esto ANTES de Authorization
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            // Middleware para redirigir si no hay sesión
+            // Redirección a Login si no autenticado (permití Identity y estáticos)
             app.Use(async (context, next) =>
             {
-                var user = context.User;
                 var path = context.Request.Path;
+                var user = context.User;
 
-                // Si no está autenticado y no está yendo al login o registro
                 if (!user.Identity!.IsAuthenticated &&
-                    !path.StartsWithSegments("/Identity/Account/Login") &&
-                    !path.StartsWithSegments("/Identity/Account/Register") &&
+                    !path.StartsWithSegments("/Identity") &&
                     !path.StartsWithSegments("/css") &&
-                    !path.StartsWithSegments("/js"))
+                    !path.StartsWithSegments("/js") &&
+                    !path.StartsWithSegments("/lib"))
                 {
                     context.Response.Redirect("/Identity/Account/Login");
                     return;
@@ -66,19 +80,20 @@ namespace TurnosMedicos
                 await next();
             });
 
-            // Rutas
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
+            // ⬇️ Seed con Roles y UsuarioExt
             using (var scope = app.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<ApplicationDbContext>();
-                var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+                var sp = scope.ServiceProvider;
+                var context = sp.GetRequiredService<ApplicationDbContext>();
+                var userMgr = sp.GetRequiredService<UserManager<UsuarioExt>>();
+                var roleMgr = sp.GetRequiredService<RoleManager<IdentityRole>>();
 
-                await DbInitializer.SeedAsync(context, userManager);
+                await DbInitializer.SeedAsync(context, userMgr, roleMgr);
             }
 
             app.Run();
