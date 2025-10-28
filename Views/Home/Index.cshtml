@@ -1,0 +1,73 @@
+﻿@model TurnosMedicos.Models.ViewModels.ResumenSistemaViewModel
+
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="container mt-5">
+
+    <!-- Encabezado principal -->
+    <header class="text-center mb-5">
+        <h1 class="display-4">Bienvenido, @Model.Usuario</h1>
+        <p class="lead text-muted">Resumen general del sistema de turnos médicos</p>
+    </header>
+
+    <!-- Sección de Personas -->
+    <section class="mb-5">
+        <h2 class="mb-3 border-bottom pb-2">Personas</h2>
+        <div class="row text-center">
+            <div class="col-md-6 mb-3">
+                <div class="p-4 bg-primary text-white rounded">
+                    <h3>Pacientes</h3>
+                    <p class="fs-2 fw-bold">@Model.TotalPacientes</p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="p-4 bg-success text-white rounded">
+                    <h3>Médicos</h3>
+                    <p class="fs-2 fw-bold">@Model.TotalMedicos</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Turnos -->
+    <section class="mb-5">
+        <h2 class="mb-3 border-bottom pb-2">Turnos</h2>
+        <div class="row text-center">
+            <div class="col-md-12 mb-3">
+                <div class="p-4 bg-warning text-dark rounded">
+                    <h3>Total Turnos</h3>
+                    <p class="fs-2 fw-bold">@Model.TotalTurnos</p>
+                    <small>Pendientes: @Model.TurnosPendientes | Confirmados: @Model.TurnosConfirmados</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Servicios -->
+    <section class="mb-5">
+        <h2 class="mb-3 border-bottom pb-2">Servicios</h2>
+        <div class="row text-center">
+            <div class="col-md-4 mb-3">
+                <div class="p-4 bg-info text-white rounded">
+                    <h3>Obras Sociales</h3>
+                    <p class="fs-2 fw-bold">@Model.TotalObrasSociales</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="p-4 bg-secondary text-white rounded">
+                    <h3>Especialidades</h3>
+                    <p class="fs-2 fw-bold">@Model.TotalEspecialidades</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="p-4 bg-dark text-white rounded">
+                    <h3>Consultorios</h3>
+                    <p class="fs-2 fw-bold">@Model.TotalConsultorios</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>

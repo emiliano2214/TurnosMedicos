@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TurnosMedicos</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+
+    <!-- Estilos del sitio -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/TurnosMedicos.styles.css" asp-append-version="true" />
+
+    <style>
+        .layout-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside.sidebar {
+            width: 220px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 1rem;
+        }
+
+            aside.sidebar a {
+                display: block;
+                padding: 10px 12px;
+                margin-bottom: 6px;
+                color: #333;
+                text-decoration: none;
+                border-radius: 8px;
+                transition: background-color 0.2s, color 0.2s;
+            }
+
+                aside.sidebar a:hover {
+                    background-color: #0d6efd;
+                    color: white;
+                }
+
+        main.main-content {
+            flex: 1;
+            padding: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TurnosMedicos</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Consultorio" asp-action="Index">Consultorios</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Medico" asp-action="Index">Médicos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Paciente" asp-action="Index">Pacientes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Turno" asp-action="Index">Turnos</a>
+                        </li>
+                    </ul>
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="layout-wrapper">
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <aside class="sidebar">
+                <h5 class="mb-3">Secciones</h5>
+                <a asp-controller="Home" asp-action="Index">🏠 Inicio</a>
+                <a asp-controller="Consultorio" asp-action="Index">🏥 Consultorios</a>
+                <a asp-controller="Medico" asp-action="Index">👨‍⚕️ Médicos</a>
+                <a asp-controller="Paciente" asp-action="Index">🧑 Pacientes</a>
+                <a asp-controller="Turno" asp-action="Index">📅 Turnos</a>
+                <a asp-controller="Especialidad" asp-action="Index">💊 Especialidades</a>
+                <a asp-controller="Tratamiento" asp-action="Index">💉 Tratamientos</a>
+                <a asp-controller="ObraSocial" asp-action="Index">🏦 Obras Sociales</a>
+                <a asp-controller="HistoriaClinica" asp-action="Index">📋 Historias Clínicas</a>
+            </aside>
+        }
+
+        <main role="main" class="main-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - TurnosMedicos -
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
+        </div>
+    </footer>
+
+    <!-- jQuery (necesario para DataTables y Bootstrap JS) -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <!-- Script del sitio -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- Inicialización global de DataTables -->
+    <script>
+        $(document).ready(function () {
+            $('table.datatable').DataTable({
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                },
+                pageLength: 5,
+                lengthMenu: [5, 10, 25, 50],
+            });
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
