@@ -7,174 +7,181 @@ using TurnosMedicos.Models;
 
 namespace TurnosMedicos.Controllers
 {
-    [Authorize] // todos logueados pueden entrar al Index; abajo filtramos por rol/claim
-    public class HistoriaClinicaController : GenericController<HistoriaClinica>
+    [Authorize] // requiere sesión para todo el controller
+    public class TurnoController : GenericController<Turno>
     {
-        public HistoriaClinicaController(ApplicationDbContext context) : base(context) { }
+        private readonly ApplicationDbContext _ctx;
 
-        // INDEX: Paciente ve solo las suyas; Medico ve las que cargó; Admin ve todas
+        public TurnoController(ApplicationDbContext context) : base(context)
+        {
+            _ctx = context;
+        }
+
+        // LISTA: Paciente -> sus turnos | Medico -> sus turnos | Staff -> todos
         public override async Task<IActionResult> Index()
         {
-            var q = _context.Set<HistoriaClinica>()
-                .Include(h => h.Paciente)
-                .Include(h => h.Medico)
+            var q = _ctx.Set<Turno>()
+                .Include(t => t.Paciente)
+                .Include(t => t.Medico).ThenInclude(m => m.Especialidad)
                 .AsQueryable();
 
             if (User.IsInRole("Paciente"))
             {
                 var pidStr = User.FindFirst("PacienteId")?.Value;
                 if (int.TryParse(pidStr, out var pid))
-                    q = q.Where(h => h.IdPaciente == pid);
+                    q = q.Where(t => t.IdPaciente == pid);
             }
             else if (User.IsInRole("Medico"))
             {
                 var midStr = User.FindFirst("MedicoId")?.Value;
                 if (int.TryParse(midStr, out var mid))
-                    q = q.Where(h => h.IdMedico == mid);
+                    q = q.Where(t => t.IdMedico == mid);
             }
-            // Admin: sin filtro
+            // Staff ve todo
 
             var lista = await q.AsNoTracking().ToListAsync();
             return View(lista);
         }
 
-        // ---------- CREAR ----------
-        // Solo Admin y Medico pueden crear
-        [Authorize(Roles = "Admin,Medico")]
+        // ====== CREAR ====== (solo Paciente) 
+        [Authorize(Policy = "EsPaciente")]
         public override IActionResult Crear()
         {
-            CargarSelects(paraMedico: User.IsInRole("Medico"));
+            CargarSelects(paraPaciente: true); // no mostrar lista de pacientes
             return base.Crear();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Medico")]
-        public override async Task<IActionResult> Crear(HistoriaClinica entity)
+        [Authorize(Policy = "EsPaciente")]
+        public override async Task<IActionResult> Crear(Turno entity)
         {
-            // Si es médico, se fuerza que la historia quede asociada a SU MedicoId
-            if (User.IsInRole("Medico"))
-            {
-                var midStr = User.FindFirst("MedicoId")?.Value;
-                if (!int.TryParse(midStr, out var mid)) return Forbid();
-                entity.IdMedico = mid;
-            }
+            // Forzar que el turno pertenezca al Paciente logueado (evita manipulación del form)
+            var pidStr = User.FindFirst("PacienteId")?.Value;
+            if (!int.TryParse(pidStr, out var pid)) return Forbid();
+            entity.IdPaciente = pid;
 
             if (!ModelState.IsValid)
             {
-                CargarSelects(paraMedico: User.IsInRole("Medico"));
+                CargarSelects(paraPaciente: true);
                 return View(entity);
             }
 
             return await base.Crear(entity);
         }
 
-        // ---------- EDITAR ----------
-        [Authorize(Roles = "Admin,Medico")]
+        // ====== EDITAR ====== (Paciente/Médico/Staff con ownership checks)
         public override async Task<IActionResult> Editar(int id)
         {
-            var model = await _context.Set<HistoriaClinica>()
-                .Include(h => h.Paciente)
-                .Include(h => h.Medico)
-                .FirstOrDefaultAsync(h => h.IdHistoria == id);
+            var turno = await _ctx.Set<Turno>()
+                .Include(t => t.Paciente)
+                .Include(t => t.Medico).ThenInclude(m => m.Especialidad)
+                .FirstOrDefaultAsync(t => t.IdTurno == id);
 
-            if (model is null) return NotFound();
+            if (turno is null) return NotFound();
 
-            // Si es médico, solo puede editar historias que él cargó
-            if (User.IsInRole("Medico"))
+            // Paciente solo edita sus turnos
+            if (User.IsInRole("Paciente"))
+            {
+                var pidStr = User.FindFirst("PacienteId")?.Value;
+                if (!int.TryParse(pidStr, out var pid) || turno.IdPaciente != pid)
+                    return Forbid();
+                // En edición de paciente, no permitimos cambiar el paciente
+                CargarSelects(paraPaciente: true);
+            }
+            // Médico solo edita turnos que atiende
+            else if (User.IsInRole("Medico"))
             {
                 var midStr = User.FindFirst("MedicoId")?.Value;
-                if (!int.TryParse(midStr, out var mid) || model.IdMedico != mid)
+                if (!int.TryParse(midStr, out var mid) || turno.IdMedico != mid)
                     return Forbid();
+                // Médico puede cambiar estado/fecha si querés; mostramos lista de médicos (opcional)
+                CargarSelects(paraPaciente: false);
+            }
+            else
+            {
+                // Staff
+                CargarSelects(paraPaciente: false);
             }
 
-            CargarSelects(paraMedico: User.IsInRole("Medico"), model);
-            return View(model);
+            return View(turno);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Medico")]
-        public override async Task<IActionResult> Editar(int id, HistoriaClinica entity)
+        public override async Task<IActionResult> Editar(int id, Turno entity)
         {
-            var original = await _context.Set<HistoriaClinica>()
+            var actual = await _ctx.Set<Turno>()
                 .AsNoTracking()
-                .FirstOrDefaultAsync(h => h.IdHistoria == id);
+                .FirstOrDefaultAsync(t => t.IdTurno == id);
 
-            if (original is null) return NotFound();
+            if (actual is null) return NotFound();
 
+            // Paciente solo si es suyo y no puede cambiar IdPaciente
+            if (User.IsInRole("Paciente"))
+            {
+                var pidStr = User.FindFirst("PacienteId")?.Value;
+                if (!int.TryParse(pidStr, out var pid) || actual.IdPaciente != pid)
+                    return Forbid();
+                entity.IdPaciente = pid; // refuerza
+            }
+
+            // Médico solo si le pertenece (mismo IdMedico)
             if (User.IsInRole("Medico"))
             {
                 var midStr = User.FindFirst("MedicoId")?.Value;
-                if (!int.TryParse(midStr, out var mid) || original.IdMedico != mid)
+                if (!int.TryParse(midStr, out var mid) || actual.IdMedico != mid)
                     return Forbid();
-
-                // Evitar que el médico “cambie” el médico de la historia
-                entity.IdMedico = mid;
+                // Si no querés que el médico cambie el paciente: mantener el IdPaciente original
+                entity.IdPaciente = actual.IdPaciente;
+                entity.IdMedico = actual.IdMedico; // evita reasignar a otro médico
             }
 
             if (!ModelState.IsValid)
             {
-                CargarSelects(paraMedico: User.IsInRole("Medico"), entity);
+                CargarSelects(paraPaciente: User.IsInRole("Paciente"));
                 return View(entity);
             }
 
             return await base.Editar(id, entity);
         }
 
-        // ---------- BORRAR ----------
-        [Authorize(Roles = "Admin,Medico")]
+        // ====== BORRAR ====== (solo Staff)
+        [Authorize(Policy = "Staff")]
         public override async Task<IActionResult> Borrar(int id)
         {
-            var model = await _context.Set<HistoriaClinica>()
-                .Include(h => h.Paciente)
-                .Include(h => h.Medico)
-                .FirstOrDefaultAsync(h => h.IdHistoria == id);
-
-            if (model is null) return NotFound();
-
-            if (User.IsInRole("Medico"))
-            {
-                var midStr = User.FindFirst("MedicoId")?.Value;
-                if (!int.TryParse(midStr, out var mid) || model.IdMedico != mid)
-                    return Forbid();
-            }
-
-            return View(model);
+            // Podés mostrar confirmación en una vista si tu GenericController no la usa.
+            return await base.Borrar(id);
         }
 
-        // (si tu GenericController ya borra en GET, dejalo; si tenés POST Confirmado, replicá el check de ownership)
-
-        // ---------- Helpers ----------
-        private void CargarSelects(bool paraMedico, HistoriaClinica? model = null)
+        // -------- Helpers --------
+        private void CargarSelects(bool paraPaciente)
         {
-            // Pacientes: siempre se listan (Admin y Medico pueden elegir)
-            ViewBag.Pacientes = _context.Set<Paciente>()
-                .Select(p => new SelectListItem
-                {
-                    Value = p.IdPaciente.ToString(),
-                    Text = p.Nombre + " " + p.Apellido,
-                    Selected = model != null && model.IdPaciente == p.IdPaciente
-                })
-                .ToList();
-
-            if (paraMedico)
+            if (!paraPaciente)
             {
-                // Médico: no debe elegir otro médico; se fuerza por claim
-                ViewBag.Medicos = new List<SelectListItem>();
-            }
-            else
-            {
-                // Admin: puede elegir médico
-                ViewBag.Medicos = _context.Set<Medico>()
-                    .Select(m => new SelectListItem
+                // Staff puede elegir paciente
+                ViewBag.Pacientes = _ctx.Set<Paciente>()
+                    .Select(p => new SelectListItem
                     {
-                        Value = m.IdMedico.ToString(),
-                        Text = m.Nombre + " " + m.Apellido,
-                        Selected = model != null && model.IdMedico == m.IdMedico
+                        Value = p.IdPaciente.ToString(),
+                        Text = p.Nombre + " " + p.Apellido
                     })
                     .ToList();
             }
+            else
+            {
+                // Paciente no elige paciente (se fuerza por claim)
+                ViewBag.Pacientes = Enumerable.Empty<SelectListItem>().ToList();
+            }
+
+            ViewBag.Medicos = _ctx.Set<Medico>()
+                .Include(m => m.Especialidad)
+                .Select(m => new SelectListItem
+                {
+                    Value = m.IdMedico.ToString(),
+                    Text = m.Nombre + " " + m.Apellido + " - " + m.Especialidad.Nombre
+                })
+                .ToList();
         }
     }
 }
