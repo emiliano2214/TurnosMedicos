@@ -1,11 +1,30 @@
 ﻿@model IEnumerable<TurnosMedicos.Models.Paciente>
 
-<h2>Pacientes</h2>
-<a asp-action="Crear" class="btn btn-success mb-3">Agregar Paciente</a>
+@{
+    ViewData["Title"] = "Pacientes";
+    var esAdmin = User.IsInRole("Admin");
+    var esAdm = User.IsInRole("Administrativo");
+    var esStaff = esAdmin || esAdm;
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (esStaff)
+{
+    <a asp-action="Crear" class="btn btn-success mb-3">Agregar Paciente</a>
+}
 
 <table class="table table-bordered table-striped datatable">
     <thead class="table-dark">
-        <tr><th>ID</th><th>Nombre</th><th>Apellido</th><th>DNI</th><th>Teléfono</th><th>Email</th><th>Acciones</th></tr>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>DNI</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Acciones</th>
+        </tr>
     </thead>
     <tbody>
         @foreach (var p in Model)
@@ -18,8 +37,11 @@
                 <td>@p.Telefono</td>
                 <td>@p.Email</td>
                 <td>
-                    <a asp-action="Editar" asp-route-id="@p.IdPaciente" class="btn btn-warning btn-sm">Editar</a>
-                    <a asp-action="Borrar" asp-route-id="@p.IdPaciente" class="btn btn-danger btn-sm">Eliminar</a>
+                    @if (esStaff)
+                    {
+                        <a asp-action="Editar" asp-route-id="@p.IdPaciente" class="btn btn-warning btn-sm">Editar</a>
+                        <a asp-action="Borrar" asp-route-id="@p.IdPaciente" class="btn btn-danger btn-sm">Eliminar</a>
+                    }
                 </td>
             </tr>
         }

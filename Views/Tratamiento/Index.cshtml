@@ -1,11 +1,17 @@
 ﻿@model IEnumerable<TurnosMedicos.Models.Tratamiento>
 @{
     ViewData["Title"] = "Tratamientos";
+    var esAdmin = User.IsInRole("Admin");
+    var esMedico = User.IsInRole("Medico");
+    var esPac = User.IsInRole("Paciente");
 }
 
 <h2>@ViewData["Title"]</h2>
 
-<a asp-action="Crear" class="btn btn-success mb-3">Agregar Tratamiento</a>
+@if (esAdmin || esMedico)
+{
+    <a asp-action="Crear" class="btn btn-success mb-3">Agregar Tratamiento</a>
+}
 
 <table class="table table-bordered table-striped datatable">
     <thead class="table-dark">
@@ -23,13 +29,17 @@
         {
             <tr>
                 <td>@t.IdTratamiento</td>
-                <td>@t.IdPaciente</td>
+                <td>@(t.Paciente != null ? t.Paciente.Nombre + " " + t.Paciente.Apellido : $"ID #{t.IdPaciente}")</td>
                 <td>@t.Descripcion</td>
                 <td>@t.FechaInicio.ToShortDateString()</td>
                 <td>@(t.FechaFin.HasValue? t.FechaFin.Value.ToShortDateString() : "")</td>
                 <td>
-                    <a asp-action="Editar" asp-route-id="@t.IdTratamiento" class="btn btn-warning btn-sm">Editar</a>
-                    <a asp-action="Borrar" asp-route-id="@t.IdTratamiento" class="btn btn-danger btn-sm">Eliminar</a>
+                    @if (esAdmin || esMedico)
+                    {
+                        <a asp-action="Editar" asp-route-id="@t.IdTratamiento" class="btn btn-warning btn-sm">Editar</a>
+                        <a asp-action="Borrar" asp-route-id="@t.IdTratamiento" class="btn btn-danger btn-sm">Eliminar</a>
+                    }
+                    @* Paciente: sin botones *@
                 </td>
             </tr>
         }

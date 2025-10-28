@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TurnosMedicos.Data;
@@ -6,31 +7,41 @@ using TurnosMedicos.Models;
 
 namespace TurnosMedicos.Controllers
 {
+    [Authorize]
     public class TratamientoController : GenericController<Tratamiento>
     {
         public TratamientoController(ApplicationDbContext context) : base(context) { }
 
-        // Listado con include (opcional, por si querés mostrar el nombre del paciente en la tabla)
+        // INDEX: Paciente ve solo los suyos; Medico/Admin ven todos (no hay ownership)
         public override async Task<IActionResult> Index()
         {
-            var datos = await _context.Set<Tratamiento>()
+            var q = _context.Set<Tratamiento>()
                 .Include(t => t.Paciente)
-                .AsNoTracking()
-                .ToListAsync();
+                .AsQueryable();
 
-            return View(datos);
+            if (User.IsInRole("Paciente"))
+            {
+                var pidStr = User.FindFirst("PacienteId")?.Value;
+                if (int.TryParse(pidStr, out var pid))
+                    q = q.Where(t => t.IdPaciente == pid);
+            }
+            // Medico/Admin: sin filtro (no hay IdMedico)
+
+            var lista = await q.AsNoTracking().ToListAsync();
+            return View(lista);
         }
 
-        // GET: Crear  → cargo combos y delego al base
+        // ABM solo Admin y Medico
+        [Authorize(Roles = "Admin,Medico")]
         public override IActionResult Crear()
         {
             CargarSelects();
             return base.Crear();
         }
 
-        // POST: Crear  → si hay error, vuelvo a cargar combos
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Medico")]
         public override async Task<IActionResult> Crear(Tratamiento entity)
         {
             if (!ModelState.IsValid)
@@ -38,20 +49,19 @@ namespace TurnosMedicos.Controllers
                 CargarSelects();
                 return View(entity);
             }
-
             return await base.Crear(entity);
         }
 
-        // GET: Editar/id  → cargo combos antes de mostrar el form
+        [Authorize(Roles = "Admin,Medico")]
         public override async Task<IActionResult> Editar(int id)
         {
             CargarSelects();
             return await base.Editar(id);
         }
 
-        // POST: Editar/id  → si hay error, recargo combos
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Medico")]
         public override async Task<IActionResult> Editar(int id, Tratamiento entity)
         {
             if (!ModelState.IsValid)
@@ -59,11 +69,15 @@ namespace TurnosMedicos.Controllers
                 CargarSelects();
                 return View(entity);
             }
-
             return await base.Editar(id, entity);
         }
 
-        // --------- helpers ----------
+        [Authorize(Roles = "Admin,Medico")]
+        public override async Task<IActionResult> Borrar(int id)
+        {
+            return await base.Borrar(id);
+        }
+
         private void CargarSelects()
         {
             ViewBag.Pacientes = _context.Set<Paciente>()

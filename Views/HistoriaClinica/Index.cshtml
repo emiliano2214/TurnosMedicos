@@ -1,11 +1,21 @@
 ﻿@model IEnumerable<TurnosMedicos.Models.HistoriaClinica>
 @{
     ViewData["Title"] = "Historias Clínicas";
+    var esAdmin = User.IsInRole("Admin");
+    var esMedico = User.IsInRole("Medico");
+    var esPac = User.IsInRole("Paciente");
+
+    // Si querés ocultar botones al médico cuando NO es el dueño, descomentá esto:
+    var medicoIdClaim = User.FindFirst("MedicoId")?.Value;
+    int? medicoIdUsuario = int.TryParse(medicoIdClaim, out var midTmp) ? midTmp : (int?)null;
 }
 
 <h2>@ViewData["Title"]</h2>
 
-<a asp-action="Crear" class="btn btn-success mb-3">Agregar Historia Clínica</a>
+@if (esAdmin || esMedico)
+{
+    <a asp-action="Crear" class="btn btn-success mb-3">Agregar Historia Clínica</a>
+}
 
 <table class="table table-bordered table-striped datatable">
     <thead class="table-dark">
@@ -28,8 +38,21 @@
                 <td>@h.FechaRegistro.ToShortDateString()</td>
                 <td>@h.Descripcion</td>
                 <td>
-                    <a asp-action="Editar" asp-route-id="@h.IdHistoria" class="btn btn-warning btn-sm">Editar</a>
-                    <a asp-action="Borrar" asp-route-id="@h.IdHistoria" class="btn btn-danger btn-sm">Eliminar</a>
+                    @* Admin siempre puede *@
+                    @if (esAdmin)
+                    {
+                        <a asp-action="Editar" asp-route-id="@h.IdHistoria" class="btn btn-warning btn-sm">Editar</a>
+                        <a asp-action="Borrar" asp-route-id="@h.IdHistoria" class="btn btn-danger btn-sm">Eliminar</a>
+                    }
+
+                    @* Médico: puede ABM. Si querés restringir a “solo sus historias”, activá el if de ownership *@
+                    @if (esMedico /* && medicoIdUsuario.HasValue && h.IdMedico == medicoIdUsuario.Value */)
+                    {
+                        <a asp-action="Editar" asp-route-id="@h.IdHistoria" class="btn btn-warning btn-sm">Editar</a>
+                        <a asp-action="Borrar" asp-route-id="@h.IdHistoria" class="btn btn-danger btn-sm">Eliminar</a>
+                    }
+
+                    @* Paciente: sin botones *@
                 </td>
             </tr>
         }

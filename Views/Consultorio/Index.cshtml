@@ -2,11 +2,17 @@
 
 @{
     ViewData["Title"] = "Consultorios";
+    var esAdmin = User.IsInRole("Admin");
+    var esAdm = User.IsInRole("Administrativo");
+    var esStaff = esAdmin || esAdm;
 }
 
 <h2>@ViewData["Title"]</h2>
 
-<a asp-action="Crear" class="btn btn-success mb-3">Agregar Consultorio</a>
+@if (esStaff)
+{
+    <a asp-action="Crear" class="btn btn-success mb-3">Agregar Consultorio</a>
+}
 
 <table class="table table-bordered table-striped datatable">
     <thead class="table-dark">
@@ -25,8 +31,11 @@
                 <td>@c.Numero</td>
                 <td>@c.Ubicacion</td>
                 <td>
-                    <a asp-action="Editar" asp-route-id="@c.IdConsultorio" class="btn btn-warning btn-sm">Editar</a>
-                    <a asp-action="Borrar" asp-route-id="@c.IdConsultorio" class="btn btn-danger btn-sm">Eliminar</a>
+                    @if (esStaff)
+                    {
+                        <a asp-action="Editar" asp-route-id="@c.IdConsultorio" class="btn btn-warning btn-sm">Editar</a>
+                        <a asp-action="Borrar" asp-route-id="@c.IdConsultorio" class="btn btn-danger btn-sm">Eliminar</a>
+                    }
                 </td>
             </tr>
         }

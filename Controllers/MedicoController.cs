@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using TurnosMedicos.Models;
-using TurnosMedicos.Data;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using TurnosMedicos.Data;
+using TurnosMedicos.Models;
 
 namespace TurnosMedicos.Controllers
 {
+    [Authorize(Policy = "Staff")]
     public class MedicoController : GenericController<Medico>
     {
         public MedicoController(ApplicationDbContext context) : base(context) { }

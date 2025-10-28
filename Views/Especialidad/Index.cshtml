@@ -1,11 +1,17 @@
 ﻿@model IEnumerable<TurnosMedicos.Models.Especialidad>
 @{
     ViewData["Title"] = "Especialidades";
+    var esAdmin = User.IsInRole("Admin");
+    var esAdm = User.IsInRole("Administrativo");
+    var esStaff = esAdmin || esAdm;
 }
 
 <h2>@ViewData["Title"]</h2>
 
-<a asp-action="Crear" class="btn btn-success mb-3">Agregar Especialidad</a>
+@if (esStaff)
+{
+    <a asp-action="Crear" class="btn btn-success mb-3">Agregar Especialidad</a>
+}
 
 <table class="table table-bordered table-striped datatable">
     <thead class="table-dark">
@@ -24,8 +30,11 @@
                 <td>@e.Nombre</td>
                 <td>@e.Descripcion</td>
                 <td>
-                    <a asp-action="Editar" asp-route-id="@e.IdEspecialidad" class="btn btn-warning btn-sm">Editar</a>
-                    <a asp-action="Borrar" asp-route-id="@e.IdEspecialidad" class="btn btn-danger btn-sm">Eliminar</a>
+                    @if (esStaff)
+                    {
+                        <a asp-action="Editar" asp-route-id="@e.IdEspecialidad" class="btn btn-warning btn-sm">Editar</a>
+                        <a asp-action="Borrar" asp-route-id="@e.IdEspecialidad" class="btn btn-danger btn-sm">Eliminar</a>
+                    }
                 </td>
             </tr>
         }
