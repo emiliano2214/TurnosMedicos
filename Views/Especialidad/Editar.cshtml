@@ -1,0 +1,17 @@
+﻿@model TurnosMedicos.Models.Especialidad
+@{
+    ViewData["Title"] = "Editar Especialidad";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<form asp-action="Editar" method="post">
+    <input type="hidden" asp-for="IdEspecialidad" />
+    <partial name="_FormEspecialidad" model="Model" />
+    <button type="submit" class="btn btn-warning">Actualizar</button>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

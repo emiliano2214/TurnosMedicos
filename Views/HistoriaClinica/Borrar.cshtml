@@ -1,0 +1,24 @@
+﻿@model TurnosMedicos.Models.HistoriaClinica
+@{
+    ViewData["Title"] = "Eliminar Historia Clínica";
+}
+
+<h2 class="text-danger">¿Eliminar Historia Clínica?</h2>
+
+<div class="alert alert-warning mt-3 mb-4">
+    ¿Estás seguro de eliminar la historia clínica del paciente
+    <strong>@Model.Paciente?.Nombre</strong> con el médico
+    <strong>@Model.Medico?.Nombre</strong> registrada el
+    <strong>@Model.FechaRegistro.ToShortDateString()</strong>?
+</div>
+
+<form asp-action="Borrar" method="post">
+    <input type="hidden" asp-for="IdHistoria" />
+    <partial name="_FormHistoriaClinica" model="Model" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

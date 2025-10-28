@@ -1,0 +1,22 @@
+﻿@model TurnosMedicos.Models.Tratamiento
+@{
+    ViewData["Title"] = "Eliminar Tratamiento";
+}
+
+<h2 class="text-danger">¿Eliminar Tratamiento?</h2>
+
+<div class="alert alert-warning mt-3 mb-4">
+    ¿Estás seguro de eliminar el tratamiento <strong>@Model.Descripcion</strong>
+    del paciente con ID <strong>@Model.IdPaciente</strong>?
+</div>
+
+<form asp-action="Borrar" method="post">
+    <input type="hidden" asp-for="IdTratamiento" />
+    <partial name="_FormTratamiento" model="Model" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

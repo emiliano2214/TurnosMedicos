@@ -1,0 +1,23 @@
+﻿@model TurnosMedicos.Models.Paciente
+@{
+    ViewData["Title"] = "Eliminar Paciente";
+    ViewData["ReadOnly"] = true; // activa modo solo lectura en el partial
+}
+
+<h2 class="text-danger">¿Eliminar Paciente?</h2>
+
+<div class="alert alert-warning mt-3 mb-4">
+    ¿Estás seguro de eliminar al paciente <strong>@Model.Nombre @Model.Apellido</strong>
+    con DNI <strong>@Model.Dni</strong>?
+</div>
+
+<form asp-action="Borrar" method="post">
+    <input type="hidden" asp-for="IdPaciente" />
+    <partial name="_FormPaciente" model="Model" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,16 @@
+﻿@model TurnosMedicos.Models.ObraSocial
+@{
+    ViewData["Title"] = "Eliminar Obra Social";
+}
+
+<h2 class="text-danger">¿Eliminar Obra Social?</h2>
+
+<div class="alert alert-warning mt-3 mb-4">
+    ¿Estás seguro de eliminar la obra social <strong>@Model.Nombre</strong>?
+</div>
+
+<form asp-action="Borrar" method="post">
+    <input type="hidden" asp-for="IdObraSocial" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

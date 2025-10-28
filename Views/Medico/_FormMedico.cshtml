@@ -1,0 +1,31 @@
+﻿@model TurnosMedicos.Models.Medico
+
+<div class="mb-3">
+    <label asp-for="Nombre" class="form-label"></label>
+    <input asp-for="Nombre" class="form-control" />
+    <span asp-validation-for="Nombre" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Apellido" class="form-label"></label>
+    <input asp-for="Apellido" class="form-control" />
+    <span asp-validation-for="Apellido" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Matricula" class="form-label"></label>
+    <input asp-for="Matricula" type="number" class="form-control" />
+    <span asp-validation-for="Matricula" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="IdEspecialidad" class="form-label"></label>
+    <select asp-for="IdEspecialidad" asp-items="ViewBag.Especialidades" class="form-control"></select>
+    <span asp-validation-for="IdEspecialidad" class="text-danger"></span>
+</div>
+
+<div class="mb-3">
+    <label asp-for="IdConsultorio" class="form-label"></label>
+    <select asp-for="IdConsultorio" asp-items="ViewBag.Consultorios" class="form-control"></select>
+    <span asp-validation-for="IdConsultorio" class="text-danger"></span>
+</div>

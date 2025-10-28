@@ -1,0 +1,16 @@
+﻿@model TurnosMedicos.Models.Consultorio
+@{
+    ViewData["Title"] = "Eliminar Consultorio";
+}
+
+<h2 class="text-danger">¿Eliminar Consultorio?</h2>
+
+<div class="alert alert-warning mt-3 mb-4">
+    ¿Estás seguro de eliminar el consultorio <strong>@Model.Numero</strong>?
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="IdConsultorio" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

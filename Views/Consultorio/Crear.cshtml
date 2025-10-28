@@ -1,0 +1,16 @@
+﻿@model TurnosMedicos.Models.Consultorio
+@{
+    ViewData["Title"] = "Agregar Consultorio";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<form asp-action="Crear" method="post">
+    <partial name="_FormConsultorio" model="Model" />
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

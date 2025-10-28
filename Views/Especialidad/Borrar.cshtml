@@ -1,0 +1,16 @@
+﻿@model TurnosMedicos.Models.Especialidad
+@{
+    ViewData["Title"] = "Eliminar Especialidad";
+}
+
+<h2 class="text-danger">¿Eliminar Especialidad?</h2>
+
+<div class="alert alert-warning mt-3 mb-4">
+    ¿Estás seguro de eliminar la especialidad <strong>@Model.Nombre</strong>?
+</div>
+
+<form asp-action="Borrar" method="post">
+    <input type="hidden" asp-for="IdEspecialidad" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
