@@ -11,6 +11,8 @@
         public int TotalEspecialidades { get; set; }
         public int TotalObrasSociales { get; set; }
         public int TotalConsultorios { get; set; }
+        public int TotalUsuarios {  get; set; }
+        public int TotalUsuariosConfirm {  get; set; }
 
         public List<Paciente>? Pacientes { get; set; }
         public List<Medico>? Medicos { get; set; }

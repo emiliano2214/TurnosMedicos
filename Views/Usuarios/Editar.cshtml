@@ -1,0 +1,43 @@
+﻿@model UsuarioExt
+@{
+    ViewData["Title"] = "Editar Usuario";
+    var allRoles = (List<string>)ViewBag.AllRoles;
+    var userRoles = (List<string>)ViewBag.UserRoles;
+}
+
+<h2>Editar Usuario</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input name="email" class="form-control" value="@Model.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Display Name</label>
+        <input name="displayName" class="form-control" value="@Model.DisplayName" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Roles</label>
+        <select name="roles" class="form-select" multiple size="6">
+            @foreach (var r in allRoles)
+            {
+                <option value="@r" selected="@(userRoles.Contains(r))">@r</option>
+            }
+        </select>
+        <div class="form-text">Ctrl/⌘ + click para seleccionar múltiples.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-action="Index" class="btn btn-secondary">Volver</a>
+</form>
+
+<div class="text-danger mt-3">
+    @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+    {
+        <div>@modelError.ErrorMessage</div>
+    }
+</div>

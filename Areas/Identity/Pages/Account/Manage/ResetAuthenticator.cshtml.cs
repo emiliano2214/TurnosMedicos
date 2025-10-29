@@ -13,13 +13,13 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account.Manage
 {
     public class ResetAuthenticatorModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<UsuarioExt> _userManager;
+        private readonly SignInManager<UsuarioExt> _signInManager;
         private readonly ILogger<ResetAuthenticatorModel> _logger;
 
         public ResetAuthenticatorModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<UsuarioExt> userManager,
+            SignInManager<UsuarioExt> signInManager,
             ILogger<ResetAuthenticatorModel> logger)
         {
             _userManager = userManager;

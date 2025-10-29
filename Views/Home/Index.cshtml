@@ -10,26 +10,53 @@
     <header class="text-center mb-5">
         <h1 class="display-4">Bienvenido, @Model.Usuario</h1>
         <p class="lead text-muted">Resumen general del sistema de turnos médicos</p>
+
+        @* Botonera de administración (solo visible para rol Admin) *@
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="mt-3 d-flex gap-2 justify-content-center">
+                
+
+                @* Register en modo Admin (no loguea al nuevo usuario) *@
+                <a class="btn btn-primary"
+                   asp-area="Identity"
+                   asp-page="/Account/Register"
+                   asp-route-AdminMode="true"
+                   asp-route-RolesCsv="">
+                    <i class="bi bi-person-plus"></i> Nuevo usuario
+                </a>
+            </div>
+        }
     </header>
 
     <!-- Sección de Personas -->
     <section class="mb-5">
         <h2 class="mb-3 border-bottom pb-2">Personas</h2>
         <div class="row text-center">
-            <div class="col-md-6 mb-3">
+            <div class="col-md-4 mb-3">
                 <div class="p-4 bg-primary text-white rounded">
                     <h3>Pacientes</h3>
                     <p class="fs-2 fw-bold">@Model.TotalPacientes</p>
                 </div>
             </div>
-            <div class="col-md-6 mb-3">
+
+            <div class="col-md-4 mb-3">
                 <div class="p-4 bg-success text-white rounded">
                     <h3>Médicos</h3>
                     <p class="fs-2 fw-bold">@Model.TotalMedicos</p>
                 </div>
             </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="p-4 bg-info text-white rounded">
+                    <h3>Usuarios</h3>
+                    <p class="fs-2 fw-bold mb-1">@Model.TotalUsuarios</p>
+                    <small class="d-block">Confirmados: <strong>@Model.TotalUsuariosConfirm</strong></small>
+                </div>
+            </div>
         </div>
     </section>
+
 
     <!-- Sección de Turnos -->
     <section class="mb-5">

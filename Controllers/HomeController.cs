@@ -21,6 +21,8 @@ namespace TurnosMedicos.Controllers
                 Usuario = User.Identity?.Name ?? "Invitado",
                 TotalPacientes = _context.Paciente.Count(),
                 TotalMedicos = _context.Medico.Count(),
+                TotalUsuarios = _context.Users.Count(),
+                TotalUsuariosConfirm = _context.Users.Count(u => u.EmailConfirmed),
                 TotalTurnos = _context.Turno.Count(),
                 TurnosPendientes = _context.Turno.Count(t => t.Estado == "Pendiente"),
                 TurnosConfirmados = _context.Turno.Count(t => t.Estado == "Confirmado"),

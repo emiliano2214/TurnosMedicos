@@ -16,9 +16,9 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account
 {
     public class ResetPasswordModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<UsuarioExt> _userManager;
 
-        public ResetPasswordModel(UserManager<IdentityUser> userManager)
+        public ResetPasswordModel(UserManager<UsuarioExt> userManager)
         {
             _userManager = userManager;
         }

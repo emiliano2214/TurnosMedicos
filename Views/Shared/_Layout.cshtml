@@ -96,6 +96,11 @@
                 <a asp-controller="Tratamiento" asp-action="Index">💉 Tratamientos</a>
                 <a asp-controller="ObraSocial" asp-action="Index">🏦 Obras Sociales</a>
                 <a asp-controller="HistoriaClinica" asp-action="Index">📋 Historias Clínicas</a>
+                @* Solo visible para administradores *@
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Usuarios" asp-action="Index">👥 Usuarios</a>
+                }
             </aside>
         }
 

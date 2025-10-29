@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Usuarios</h2>
+
+    <!-- Alta: crear usuario en Register (modo admin) -->
+    <a class="btn btn-primary"
+       asp-area="Identity"
+       asp-page="/Account/Register"
+       asp-route-AdminMode="true"
+       asp-route-Mode="create">
+        <i class="bi bi-person-plus"></i> Nuevo usuario
+    </a>
+</div>
+
+<table id="tblUsuarios" class="table table-striped table-bordered w-100">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Email</th>
+            <th>Nombre</th>
+            <th>Roles</th>
+            <th style="width:200px;">Acciones</th>
+        </tr>
+    </thead>
+</table>
+
+@section Scripts {
+    <script>
+        $(function () {
+            const regBase = '@Url.Page("/Account/Register", new { area = "Identity" })';
+
+            $('#tblUsuarios').DataTable({
+                ajax: { url: '@Url.Action("List", "Usuarios")', dataSrc: 'data' },
+                columns: [
+                    { data: 'id' },
+                    { data: 'email' },
+                    { data: 'displayName' },
+                    { data: 'roles', render: r => (r || []).join(', ') },
+                    {
+                        data: null, orderable: false,
+                        render: function (row) {
+                            const editUrl = `${regBase}?AdminMode=true&Mode=edit&TargetUserId=${row.id}`;
+                            const delUrl  = `${regBase}?AdminMode=true&Mode=delete&TargetUserId=${row.id}`;
+
+                            return `
+                              <div class="btn-group">
+                                <!-- Modificar -->
+                                <a href="${editUrl}" class="btn btn-sm btn-warning">Editar</a>
+                                <!-- Baja -->
+                                <a href="${delUrl}" class="btn btn-sm btn-danger ms-2">Eliminar</a>
+                              </div>`;
+                        }
+                    }
+                ]
+                // language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }
+            });
+        });
+    </script>
+}

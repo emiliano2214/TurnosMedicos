@@ -14,13 +14,13 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account.Manage
 {
     public class ChangePasswordModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<UsuarioExt> _userManager;
+        private readonly SignInManager<UsuarioExt> _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
 
         public ChangePasswordModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<UsuarioExt> userManager,
+            SignInManager<UsuarioExt> signInManager,
             ILogger<ChangePasswordModel> logger)
         {
             _userManager = userManager;

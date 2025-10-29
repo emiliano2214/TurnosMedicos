@@ -2,6 +2,18 @@
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
+
+    // ¿Es edición?
+    var isEdit = Model.AdminMode && string.Equals(Model.Mode, "edit", StringComparison.OrdinalIgnoreCase);
+
+    // Filtrado de roles según quién está creando/editando:
+    // - Admin => ve todos
+    // - No Admin => oculta "Admin"
+    var all = Model.AllRoles ?? new List<string>();
+    var isAdmin = User?.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
+    var rolesForUser = isAdmin
+        ? all
+        : all.Where(r => !string.Equals(r, "Admin", StringComparison.OrdinalIgnoreCase)).ToList();
 }
 
 <h1>@ViewData["Title"]</h1>
@@ -9,27 +21,64 @@
 <div class="row">
     <div class="col-md-4">
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
+            @* Mantener el contexto de administración/edición *@
+            <input type="hidden" asp-for="AdminMode" />
+            <input type="hidden" asp-for="Mode" />
+            <input type="hidden" asp-for="TargetUserId" />
+
+            <h2>@(isEdit ? "Edit user" : "Create a new account.")</h2>
             <hr />
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
             <div class="form-floating mb-3">
                 <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
                 <label asp-for="Input.Email">Email</label>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
+
+            @* Campos de password SOLO en create *@
+            @if (!isEdit)
+            {
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                    <label asp-for="Input.Password">Password</label>
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                    <label asp-for="Input.ConfirmPassword">Confirm Password</label>
+                    <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                </div>
+            }
+
+            <!-- Display Name -->
             <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <input asp-for="Input.DisplayName" class="form-control" placeholder="Nombre visible" />
+                <label asp-for="Input.DisplayName">Display Name</label>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+
+            <!-- Select múltiple de Roles (prolijo) -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Roles del usuario</label>
+                <select asp-for="Roles"
+                        class="form-select"
+                        multiple
+                        size="6"
+                        asp-items="@(new MultiSelectList(rolesForUser))"
+                        style="max-height: 220px; overflow:auto;">
+                </select>
+                <small id="rolesHelp" class="text-muted d-block mt-1">
+                    Usa Ctrl/⌘ + click para seleccionar múltiples. <span id="rolesCount"></span>
+                </small>
             </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+
+            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">
+                @(isEdit ? "Guardar cambios" : "Register")
+            </button>
         </form>
     </div>
+
     <div class="col-md-6 col-md-offset-2">
         <section>
             <h3>Use another service to register.</h3>
@@ -39,8 +88,10 @@
                 {
                     <div>
                         <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
+                            There are no external authentication services configured. See this
+                            <a href="https://go.microsoft.com/fwlink/?LinkID=532715">
+                                article about setting up this ASP.NET application to support logging in via external services
+                            </a>.
                         </p>
                     </div>
                 }
@@ -51,7 +102,10 @@
                             <p>
                                 @foreach (var provider in Model.ExternalLogins!)
                                 {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
+                                            title="Log in using your @provider.DisplayName account">
+                                        @provider.DisplayName
+                                    </button>
                                 }
                             </p>
                         </div>
@@ -64,4 +118,17 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function(){
+            const sel = document.querySelector('select[name="Roles"]');
+            const label = document.getElementById('rolesCount');
+            function refreshCount(){
+                if (!sel || !label) return;
+                const n = [...sel.selectedOptions].length;
+                label.textContent = n ? `(${n} seleccionado${n>1?'s':''})` : '';
+            }
+            sel?.addEventListener('change', refreshCount);
+            refreshCount();
+        })();
+    </script>
 }

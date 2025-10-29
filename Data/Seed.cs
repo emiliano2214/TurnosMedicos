@@ -4,29 +4,30 @@ using TurnosMedicos.Models;
 
 namespace TurnosMedicos.Data
 {
-    public static class DbInitializer
+    public static class Seed
     {
-
-        public static async Task SeedAsync(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        // ✅ Firma simplificada y consistente con Program.cs
+        public static async Task SeedAsync(
+            ApplicationDbContext context,
+            UserManager<UsuarioExt> userMgr,
+            RoleManager<IdentityRole> rolManager)
         {
-            // Asegurarse de que la BD está creada
+            // Asegurar BD y migraciones
             await context.Database.MigrateAsync();
 
-            // 🔹 CONSULTORIOS
+            // ---------- Datos maestros ----------
             if (!context.Consultorio.Any())
             {
                 context.Consultorio.Add(new Consultorio { Numero = "101", Ubicacion = "Planta Baja" });
                 await context.SaveChangesAsync();
             }
 
-            // 🔹 ESPECIALIDADES
             if (!context.Especialidad.Any())
             {
                 context.Especialidad.Add(new Especialidad { Nombre = "Cardiología", Descripcion = "Enfermedades del corazón" });
                 await context.SaveChangesAsync();
             }
 
-            // 🔹 OBRAS SOCIALES
             if (!context.ObraSocial.Any())
             {
                 context.ObraSocial.Add(new ObraSocial
@@ -40,7 +41,6 @@ namespace TurnosMedicos.Data
                 await context.SaveChangesAsync();
             }
 
-            // 🔹 PACIENTES
             if (!context.Paciente.Any())
             {
                 var obra = context.ObraSocial.First();
@@ -57,7 +57,6 @@ namespace TurnosMedicos.Data
                 await context.SaveChangesAsync();
             }
 
-            // 🔹 MÉDICOS
             if (!context.Medico.Any())
             {
                 var cons = context.Consultorio.First();
@@ -74,7 +73,6 @@ namespace TurnosMedicos.Data
                 await context.SaveChangesAsync();
             }
 
-            // 🔹 HISTORIA CLÍNICA
             if (!context.HistoriaClinica.Any())
             {
                 var pac = context.Paciente.First();
@@ -90,7 +88,6 @@ namespace TurnosMedicos.Data
                 await context.SaveChangesAsync();
             }
 
-            // 🔹 TRATAMIENTOS
             if (!context.Tratamiento.Any())
             {
                 var pac = context.Paciente.First();
@@ -105,7 +102,6 @@ namespace TurnosMedicos.Data
                 await context.SaveChangesAsync();
             }
 
-            // 🔹 TURNOS
             if (!context.Turno.Any())
             {
                 var pac = context.Paciente.First();
@@ -121,32 +117,44 @@ namespace TurnosMedicos.Data
                 await context.SaveChangesAsync();
             }
 
-            // 🔹 USUARIO ADMINISTRADOR
+            // ---------- Roles ----------
+            string[] roles = new[] { "Admin", "Administrativo", "Medico", "Paciente" };
+            foreach (var role in roles)
+            {
+                if (!await rolManager.RoleExistsAsync(role))
+                {
+                    await rolManager.CreateAsync(new IdentityRole(role));
+                }
+            }
+
+            // ---------- Usuario Admin (UsuarioExt) ----------
             string adminEmail = "admin@turnos.com";
             string adminPassword = "Admin123!";
 
-            if (await userManager.FindByEmailAsync(adminEmail) == null)
+            var adminUser = await userMgr.FindByEmailAsync(adminEmail);
+            if (adminUser == null)
             {
-                var adminUser = new IdentityUser
+                adminUser = new UsuarioExt
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    // opcional: valores extra de UsuarioExt
+                    DisplayName = "Administrador"
                 };
 
-                var result = await userManager.CreateAsync(adminUser, adminPassword);
+                var result = await userMgr.CreateAsync(adminUser, adminPassword);
+                if (!result.Succeeded)
+                {
+                    var joined = string.Join(" | ", result.Errors.Select(e => e.Description));
+                    throw new Exception($"Error creando usuario admin: {joined}");
+                }
+            }
 
-                if (result.Succeeded)
-                {
-                    // Si querés roles, podrías agregarlos aquí
-                    Console.WriteLine("Usuario administrador creado correctamente.");
-                }
-                else
-                {
-                    Console.WriteLine("Error al crear usuario administrador:");
-                    foreach (var error in result.Errors)
-                        Console.WriteLine($" - {error.Description}");
-                }
+            // Asegurar rol Admin
+            if (!await userMgr.IsInRoleAsync(adminUser, "Admin"))
+            {
+                await userMgr.AddToRoleAsync(adminUser, "Admin");
             }
         }
     }

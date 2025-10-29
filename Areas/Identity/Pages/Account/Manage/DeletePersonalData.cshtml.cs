@@ -14,13 +14,13 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account.Manage
 {
     public class DeletePersonalDataModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<UsuarioExt> _userManager;
+        private readonly SignInManager<UsuarioExt> _signInManager;
         private readonly ILogger<DeletePersonalDataModel> _logger;
 
         public DeletePersonalDataModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<UsuarioExt> userManager,
+            SignInManager<UsuarioExt> signInManager,
             ILogger<DeletePersonalDataModel> logger)
         {
             _userManager = userManager;

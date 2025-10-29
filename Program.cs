@@ -93,7 +93,7 @@ namespace TurnosMedicos
                 var userMgr = sp.GetRequiredService<UserManager<UsuarioExt>>();
                 var roleMgr = sp.GetRequiredService<RoleManager<IdentityRole>>();
 
-                await DbInitializer.SeedAsync(context, userMgr, roleMgr);
+                await Seed.SeedAsync(context, userMgr, roleMgr);
             }
 
             app.Run();
