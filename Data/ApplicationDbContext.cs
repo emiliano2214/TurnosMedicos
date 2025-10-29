@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using TurnosMedicos.Migrations;
 using TurnosMedicos.Models;
 using TurnosMedicos.Models.ViewModels;
 
@@ -19,5 +20,15 @@ namespace TurnosMedicos.Data
         public DbSet<Tratamiento> Tratamiento { get; set; }
         public DbSet<Consultorio> Consultorio { get; set; }
         public DbSet<ObraSocial> ObraSocial { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            // 👇 Mapeo del resultado del procedimiento almacenado
+            modelBuilder.Entity<SolicitarTurnoResultado>()
+                .HasNoKey()       // No tiene clave primaria
+                .ToView(null);    // No corresponde a una vista ni tabla
+        }
     }
 }

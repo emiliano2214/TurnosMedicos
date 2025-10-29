@@ -4,23 +4,30 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TurnosMedicos.Data;
 using TurnosMedicos.Models;
+using TurnosMedicos.Models.ViewModels;
+using TurnosMedicos.Services; // ⬅️ para usar TurnosServicePa
 
 namespace TurnosMedicos.Controllers
 {
-    [Authorize] // requiere sesión para todo el controller
+    [Authorize]
     public class TurnoController : GenericController<Turno>
     {
-        private readonly ApplicationDbContext _ctx;
+        private readonly ApplicationDbContext _context;
+        private readonly TurnosServicePa _sp; // servicio para ejecutar el procedimiento almacenado
 
-        public TurnoController(ApplicationDbContext context) : base(context)
+        public TurnoController(ApplicationDbContext context, TurnosServicePa sp) : base(context)
         {
-            _ctx = context;
+            _context = context;
+            _sp = sp;
         }
 
-        // LISTA: Paciente -> sus turnos | Medico -> sus turnos | Staff -> todos
+
+        // CRUD ORIGINAL
+
+
         public override async Task<IActionResult> Index()
         {
-            var q = _ctx.Set<Turno>()
+            var q = _context.Set<Turno>()
                 .Include(t => t.Paciente)
                 .Include(t => t.Medico).ThenInclude(m => m.Especialidad)
                 .AsQueryable();
@@ -37,17 +44,15 @@ namespace TurnosMedicos.Controllers
                 if (int.TryParse(midStr, out var mid))
                     q = q.Where(t => t.IdMedico == mid);
             }
-            // Staff ve todo
 
             var lista = await q.AsNoTracking().ToListAsync();
             return View(lista);
         }
 
-        // ====== CREAR ====== (solo Paciente) 
         [Authorize(Policy = "EsPaciente")]
         public override IActionResult Crear()
         {
-            CargarSelects(paraPaciente: true); // no mostrar lista de pacientes
+            CargarSelects(paraPaciente: true);
             return base.Crear();
         }
 
@@ -56,7 +61,6 @@ namespace TurnosMedicos.Controllers
         [Authorize(Policy = "EsPaciente")]
         public override async Task<IActionResult> Crear(Turno entity)
         {
-            // Forzar que el turno pertenezca al Paciente logueado (evita manipulación del form)
             var pidStr = User.FindFirst("PacienteId")?.Value;
             if (!int.TryParse(pidStr, out var pid)) return Forbid();
             entity.IdPaciente = pid;
@@ -70,37 +74,31 @@ namespace TurnosMedicos.Controllers
             return await base.Crear(entity);
         }
 
-        // ====== EDITAR ====== (Paciente/Médico/Staff con ownership checks)
         public override async Task<IActionResult> Editar(int id)
         {
-            var turno = await _ctx.Set<Turno>()
+            var turno = await _context.Set<Turno>()
                 .Include(t => t.Paciente)
                 .Include(t => t.Medico).ThenInclude(m => m.Especialidad)
                 .FirstOrDefaultAsync(t => t.IdTurno == id);
 
             if (turno is null) return NotFound();
 
-            // Paciente solo edita sus turnos
             if (User.IsInRole("Paciente"))
             {
                 var pidStr = User.FindFirst("PacienteId")?.Value;
                 if (!int.TryParse(pidStr, out var pid) || turno.IdPaciente != pid)
                     return Forbid();
-                // En edición de paciente, no permitimos cambiar el paciente
                 CargarSelects(paraPaciente: true);
             }
-            // Médico solo edita turnos que atiende
             else if (User.IsInRole("Medico"))
             {
                 var midStr = User.FindFirst("MedicoId")?.Value;
                 if (!int.TryParse(midStr, out var mid) || turno.IdMedico != mid)
                     return Forbid();
-                // Médico puede cambiar estado/fecha si querés; mostramos lista de médicos (opcional)
                 CargarSelects(paraPaciente: false);
             }
             else
             {
-                // Staff
                 CargarSelects(paraPaciente: false);
             }
 
@@ -111,30 +109,27 @@ namespace TurnosMedicos.Controllers
         [ValidateAntiForgeryToken]
         public override async Task<IActionResult> Editar(int id, Turno entity)
         {
-            var actual = await _ctx.Set<Turno>()
+            var actual = await _context.Set<Turno>()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.IdTurno == id);
 
             if (actual is null) return NotFound();
 
-            // Paciente solo si es suyo y no puede cambiar IdPaciente
             if (User.IsInRole("Paciente"))
             {
                 var pidStr = User.FindFirst("PacienteId")?.Value;
                 if (!int.TryParse(pidStr, out var pid) || actual.IdPaciente != pid)
                     return Forbid();
-                entity.IdPaciente = pid; // refuerza
+                entity.IdPaciente = pid;
             }
 
-            // Médico solo si le pertenece (mismo IdMedico)
             if (User.IsInRole("Medico"))
             {
                 var midStr = User.FindFirst("MedicoId")?.Value;
                 if (!int.TryParse(midStr, out var mid) || actual.IdMedico != mid)
                     return Forbid();
-                // Si no querés que el médico cambie el paciente: mantener el IdPaciente original
                 entity.IdPaciente = actual.IdPaciente;
-                entity.IdMedico = actual.IdMedico; // evita reasignar a otro médico
+                entity.IdMedico = actual.IdMedico;
             }
 
             if (!ModelState.IsValid)
@@ -146,21 +141,17 @@ namespace TurnosMedicos.Controllers
             return await base.Editar(id, entity);
         }
 
-        // ====== BORRAR ====== (solo Staff)
         [Authorize(Policy = "Staff")]
         public override async Task<IActionResult> Borrar(int id)
         {
-            // Podés mostrar confirmación en una vista si tu GenericController no la usa.
             return await base.Borrar(id);
         }
 
-        // -------- Helpers --------
         private void CargarSelects(bool paraPaciente)
         {
             if (!paraPaciente)
             {
-                // Staff puede elegir paciente
-                ViewBag.Pacientes = _ctx.Set<Paciente>()
+                ViewBag.Pacientes = _context.Set<Paciente>()
                     .Select(p => new SelectListItem
                     {
                         Value = p.IdPaciente.ToString(),
@@ -170,11 +161,10 @@ namespace TurnosMedicos.Controllers
             }
             else
             {
-                // Paciente no elige paciente (se fuerza por claim)
                 ViewBag.Pacientes = Enumerable.Empty<SelectListItem>().ToList();
             }
 
-            ViewBag.Medicos = _ctx.Set<Medico>()
+            ViewBag.Medicos = _context.Set<Medico>()
                 .Include(m => m.Especialidad)
                 .Select(m => new SelectListItem
                 {
@@ -182,6 +172,66 @@ namespace TurnosMedicos.Controllers
                     Text = m.Nombre + " " + m.Apellido + " - " + m.Especialidad.Nombre
                 })
                 .ToList();
+        }
+
+ 
+        // NUEVO: PROCEDIMIENTO ALMACENADO
+
+
+        [Authorize(Policy = "EsPaciente")]
+        [HttpGet]
+        public IActionResult Solicitar()
+        {
+            ViewBag.Especialidades = _context.Set<Especialidad>()
+                .Select(e => new SelectListItem
+                {
+                    Value = e.IdEspecialidad.ToString(),
+                    Text = e.Nombre
+                })
+                .ToList();
+
+            return View(); // View: Views/Turno/Solicitar.cshtml
+        }
+
+        [Authorize(Policy = "EsPaciente")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Solicitar(int idEspecialidad, DateTime fechaAtencion)
+        {
+            var pidStr = User.FindFirst("PacienteId")?.Value;
+            if (!int.TryParse(pidStr, out var idPaciente))
+                return Forbid();
+
+            if (idEspecialidad <= 0 || fechaAtencion == default)
+            {
+                ModelState.AddModelError("", "Completá todos los datos requeridos.");
+                return await ReRenderSolicitarForm(idEspecialidad);
+            }
+
+            try
+            {
+                var comprobante = await _sp.SolicitarTurnoAsync(idPaciente, idEspecialidad, fechaAtencion);
+                return View("Comprobante", comprobante);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return await ReRenderSolicitarForm(idEspecialidad);
+            }
+        }
+
+        private async Task<IActionResult> ReRenderSolicitarForm(int idEspecialidad)
+        {
+            ViewBag.Especialidades = await _context.Set<Especialidad>()
+                .Select(e => new SelectListItem
+                {
+                    Value = e.IdEspecialidad.ToString(),
+                    Text = e.Nombre
+                })
+                .ToListAsync();
+
+            ViewBag.SelectedEspecialidad = idEspecialidad;
+            return View("Solicitar");
         }
     }
 }

@@ -178,7 +178,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasKey("IdConsultorio");
 
-                    b.ToTable("Consultorio");
+                    b.ToTable("Consultorio", (string)null);
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Especialidad", b =>
@@ -200,7 +200,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasKey("IdEspecialidad");
 
-                    b.ToTable("Especialidad");
+                    b.ToTable("Especialidad", (string)null);
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.HistoriaClinica", b =>
@@ -231,7 +231,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdPaciente");
 
-                    b.ToTable("HistoriaClinica");
+                    b.ToTable("HistoriaClinica", (string)null);
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Medico", b =>
@@ -267,7 +267,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdEspecialidad");
 
-                    b.ToTable("Medico");
+                    b.ToTable("Medico", (string)null);
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.ObraSocial", b =>
@@ -301,7 +301,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasKey("IdObraSocial");
 
-                    b.ToTable("ObraSocial");
+                    b.ToTable("ObraSocial", (string)null);
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Paciente", b =>
@@ -347,7 +347,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdObraSocial");
 
-                    b.ToTable("Paciente");
+                    b.ToTable("Paciente", (string)null);
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Tratamiento", b =>
@@ -379,7 +379,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("PacienteIdPaciente");
 
-                    b.ToTable("Tratamiento");
+                    b.ToTable("Tratamiento", (string)null);
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Turno", b =>
@@ -410,7 +410,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdPaciente");
 
-                    b.ToTable("Turno");
+                    b.ToTable("Turno", (string)null);
                 });
 
             modelBuilder.Entity("UsuarioExt", b =>

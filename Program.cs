@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TurnosMedicos.Data;
+using TurnosMedicos.Models;
+using TurnosMedicos.Services;
 
 namespace TurnosMedicos
 {
@@ -10,15 +12,17 @@ namespace TurnosMedicos
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // 🔹 Cadena de conexión
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
+            // 🔹 Configuración del DbContext
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            // ⬇️ Identity con UsuarioExt y Roles
+            // 🔹 Identity con roles y confirmación de cuenta
             builder.Services
                 .AddDefaultIdentity<UsuarioExt>(opts =>
                 {
@@ -27,10 +31,10 @@ namespace TurnosMedicos
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            // ⬇️ Claims factory para PacienteId/MedicoId/DisplayName
+            // 🔹 Claims personalizados
             builder.Services.AddScoped<IUserClaimsPrincipalFactory<UsuarioExt>, AppClaimsFactory>();
 
-            // ⬇️ Policies por rol
+            // 🔹 Autorización y políticas por rol
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("EsAdmin", p => p.RequireRole("Admin"));
@@ -39,10 +43,15 @@ namespace TurnosMedicos
                 options.AddPolicy("EsPaciente", p => p.RequireRole("Paciente"));
             });
 
+            // 🔹 Servicio que ejecuta el procedimiento almacenado
+            builder.Services.AddScoped<TurnosServicePa>();
+
+            // 🔹 Controladores y vistas MVC
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
+            // 🔹 Configuración de entorno
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
@@ -53,6 +62,7 @@ namespace TurnosMedicos
                 app.UseHsts();
             }
 
+            // 🔹 Middleware
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
@@ -61,7 +71,7 @@ namespace TurnosMedicos
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Redirección a Login si no autenticado (permití Identity y estáticos)
+            // 🔹 Redirección a login si el usuario no está autenticado
             app.Use(async (context, next) =>
             {
                 var path = context.Request.Path;
@@ -80,12 +90,13 @@ namespace TurnosMedicos
                 await next();
             });
 
+            // 🔹 Rutas MVC y Razor Pages
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
-            // ⬇️ Seed con Roles y UsuarioExt
+            // 🔹 Seed inicial de roles y usuarios
             using (var scope = app.Services.CreateScope())
             {
                 var sp = scope.ServiceProvider;
