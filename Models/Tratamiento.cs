@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TurnosMedicos.Models
 {
@@ -9,6 +10,8 @@ namespace TurnosMedicos.Models
 
         [Required]
         public int IdPaciente { get; set; }
+
+        [ForeignKey(nameof(IdPaciente))]
         public Paciente? Paciente { get; set; }
 
         [Required, StringLength(200)]

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TurnosMedicos.Data;
 
@@ -11,9 +12,11 @@ using TurnosMedicos.Data;
 namespace TurnosMedicos.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251030171230_ExtenderHistorialMedico")]
+    partial class ExtenderHistorialMedico
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -178,7 +181,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasKey("IdConsultorio");
 
-                    b.ToTable("Consultorio", (string)null);
+                    b.ToTable("Consultorio");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Especialidad", b =>
@@ -200,7 +203,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasKey("IdEspecialidad");
 
-                    b.ToTable("Especialidad", (string)null);
+                    b.ToTable("Especialidad");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.HistoriaClinica", b =>
@@ -243,7 +246,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdTurno");
 
-                    b.ToTable("HistoriaClinica", (string)null);
+                    b.ToTable("HistoriaClinica");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Medico", b =>
@@ -279,7 +282,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdEspecialidad");
 
-                    b.ToTable("Medico", (string)null);
+                    b.ToTable("Medico");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.ObraSocial", b =>
@@ -313,7 +316,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasKey("IdObraSocial");
 
-                    b.ToTable("ObraSocial", (string)null);
+                    b.ToTable("ObraSocial");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Paciente", b =>
@@ -359,7 +362,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdObraSocial");
 
-                    b.ToTable("Paciente", (string)null);
+                    b.ToTable("Paciente");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Tratamiento", b =>
@@ -388,7 +391,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdPaciente");
 
-                    b.ToTable("Tratamiento", (string)null);
+                    b.ToTable("Tratamiento");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Turno", b =>
@@ -419,7 +422,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdPaciente");
 
-                    b.ToTable("Turno", (string)null);
+                    b.ToTable("Turno");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.ViewModels.SolicitarTurnoResultado", b =>

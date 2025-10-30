@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TurnosMedicos.Data;
 
@@ -11,9 +12,11 @@ using TurnosMedicos.Data;
 namespace TurnosMedicos.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251030165400_CorreccionClaseTratamiento")]
+    partial class CorreccionClaseTratamiento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -178,7 +181,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasKey("IdConsultorio");
 
-                    b.ToTable("Consultorio", (string)null);
+                    b.ToTable("Consultorio");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Especialidad", b =>
@@ -200,7 +203,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasKey("IdEspecialidad");
 
-                    b.ToTable("Especialidad", (string)null);
+                    b.ToTable("Especialidad");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.HistoriaClinica", b =>
@@ -212,12 +215,9 @@ namespace TurnosMedicos.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdHistoria"));
 
                     b.Property<string>("Descripcion")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Diagnostico")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2");
@@ -228,22 +228,13 @@ namespace TurnosMedicos.Data.Migrations
                     b.Property<int>("IdPaciente")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdTurno")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Tratamiento")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.HasKey("IdHistoria");
 
                     b.HasIndex("IdMedico");
 
                     b.HasIndex("IdPaciente");
 
-                    b.HasIndex("IdTurno");
-
-                    b.ToTable("HistoriaClinica", (string)null);
+                    b.ToTable("HistoriaClinica");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Medico", b =>
@@ -279,7 +270,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdEspecialidad");
 
-                    b.ToTable("Medico", (string)null);
+                    b.ToTable("Medico");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.ObraSocial", b =>
@@ -313,7 +304,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasKey("IdObraSocial");
 
-                    b.ToTable("ObraSocial", (string)null);
+                    b.ToTable("ObraSocial");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Paciente", b =>
@@ -359,7 +350,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdObraSocial");
 
-                    b.ToTable("Paciente", (string)null);
+                    b.ToTable("Paciente");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Tratamiento", b =>
@@ -388,7 +379,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdPaciente");
 
-                    b.ToTable("Tratamiento", (string)null);
+                    b.ToTable("Tratamiento");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Turno", b =>
@@ -419,7 +410,7 @@ namespace TurnosMedicos.Data.Migrations
 
                     b.HasIndex("IdPaciente");
 
-                    b.ToTable("Turno", (string)null);
+                    b.ToTable("Turno");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.ViewModels.SolicitarTurnoResultado", b =>
@@ -601,15 +592,9 @@ namespace TurnosMedicos.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TurnosMedicos.Models.Turno", "Turno")
-                        .WithMany()
-                        .HasForeignKey("IdTurno");
-
                     b.Navigation("Medico");
 
                     b.Navigation("Paciente");
-
-                    b.Navigation("Turno");
                 });
 
             modelBuilder.Entity("TurnosMedicos.Models.Medico", b =>

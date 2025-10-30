@@ -35,7 +35,13 @@ namespace TurnosMedicos.Controllers
 
             if (turno == null) return NotFound();
 
-            // Por ahora SIN HistoriaClinica (tu modelo no tiene IdTurno/Diagnostico/Tratamiento).
+            // 🔎 HC vinculada al turno (preferida)
+            var hc = await _contexts.HistoriaClinica
+                .AsNoTracking()
+                .Where(h => h.IdTurno == turno.IdTurno)
+                .OrderByDescending(h => h.FechaRegistro)
+                .FirstOrDefaultAsync();
+
             var comprobante = new SolicitarTurnoResultado
             {
                 IdTurno = turno.IdTurno,
@@ -44,8 +50,8 @@ namespace TurnosMedicos.Controllers
                 Especialidad = turno.Medico?.Especialidad?.Nombre,
                 FechaEmisionTurno = DateTime.Now,
                 FechaAtencion = turno.FechaHora,
-                Diagnostico = "No registrado",
-                Tratamiento = "No registrado",
+                Diagnostico = string.IsNullOrWhiteSpace(hc?.Diagnostico) ? "No registrado" : hc!.Diagnostico!,
+                Tratamiento = string.IsNullOrWhiteSpace(hc?.Tratamiento) ? "No registrado" : hc!.Tratamiento!,
                 Estado = turno.Estado,
                 FechaHora = turno.FechaHora
             };
