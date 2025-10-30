@@ -1,14 +1,29 @@
-﻿@model TurnosMedicos.Models.Turno
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@model TurnosMedicos.Models.ViewModels.TurnoForm
 
 <div class="mb-3">
     <label asp-for="IdPaciente" class="form-label"></label>
-    <select asp-for="IdPaciente" asp-items="(IEnumerable<SelectListItem>)ViewBag.Pacientes" class="form-control"></select>
+
+    @* Si el usuario es Paciente, no muestres combo: dejá hidden el valor *@
+    @if (User.IsInRole("Paciente"))
+    {
+        <input type="hidden" asp-for="IdPaciente" />
+        <input class="form-control" value="Asignado al usuario" disabled />
+    }
+    else
+    {
+        <select asp-for="IdPaciente"
+                asp-items="(IEnumerable<SelectListItem>)ViewBag.Pacientes"
+                class="form-control"></select>
+    }
     <span asp-validation-for="IdPaciente" class="text-danger"></span>
 </div>
 
 <div class="mb-3">
     <label asp-for="IdMedico" class="form-label"></label>
-    <select asp-for="IdMedico" asp-items="(IEnumerable<SelectListItem>)ViewBag.Medicos" class="form-control"></select>
+    <select asp-for="IdMedico"
+            asp-items="(IEnumerable<SelectListItem>)ViewBag.Medicos"
+            class="form-control"></select>
     <span asp-validation-for="IdMedico" class="text-danger"></span>
 </div>
 
@@ -27,3 +42,19 @@
     </select>
     <span asp-validation-for="Estado" class="text-danger"></span>
 </div>
+
+@* Campos clínicos opcionales (solo para médico/admin, si así querés) *@
+@if (User.IsInRole("Admin") || User.IsInRole("Administrativo") || User.IsInRole("Medico"))
+{
+    <div class="mb-3">
+        <label asp-for="Diagnostico" class="form-label"></label>
+        <textarea asp-for="Diagnostico" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Diagnostico" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Tratamiento" class="form-label"></label>
+        <textarea asp-for="Tratamiento" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Tratamiento" class="text-danger"></span>
+    </div>
+}

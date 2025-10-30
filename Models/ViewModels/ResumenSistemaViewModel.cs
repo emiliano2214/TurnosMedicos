@@ -2,7 +2,7 @@
 {
     public class ResumenSistemaViewModel
     {
-        public string Usuario { get; set; }
+        public string? Usuario { get; set; }
         public int TotalPacientes { get; set; }
         public int TotalMedicos { get; set; }
         public int TotalTurnos { get; set; }

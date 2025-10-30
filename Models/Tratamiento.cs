@@ -12,7 +12,7 @@ namespace TurnosMedicos.Models
         public Paciente? Paciente { get; set; }
 
         [Required, StringLength(200)]
-        public string Descripcion { get; set; }
+        public string? Descripcion { get; set; }
 
         public DateTime FechaInicio { get; set; }
         public DateTime? FechaFin { get; set; }

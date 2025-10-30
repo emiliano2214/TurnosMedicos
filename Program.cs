@@ -16,7 +16,7 @@ namespace TurnosMedicos
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            // 🔹 Configuración del DbContext
+            // 🔹 DbContext
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
@@ -34,24 +34,24 @@ namespace TurnosMedicos
             // 🔹 Claims personalizados
             builder.Services.AddScoped<IUserClaimsPrincipalFactory<UsuarioExt>, AppClaimsFactory>();
 
-            // 🔹 Autorización y políticas por rol
+            // 🔹 Autorización y políticas por rol  (⟵ AJUSTADAS: incluyen Admin)
             builder.Services.AddAuthorization(options =>
             {
                 options.AddPolicy("EsAdmin", p => p.RequireRole("Admin"));
-                options.AddPolicy("Staff", p => p.RequireRole("Administrativo"));
-                options.AddPolicy("EsMedico", p => p.RequireRole("Medico"));
-                options.AddPolicy("EsPaciente", p => p.RequireRole("Paciente"));
+                options.AddPolicy("Staff", p => p.RequireRole("Admin", "Administrativo"));
+                options.AddPolicy("EsMedico", p => p.RequireRole("Admin", "Medico"));
+                options.AddPolicy("EsPaciente", p => p.RequireRole("Admin", "Paciente"));
             });
 
             // 🔹 Servicio que ejecuta el procedimiento almacenado
             builder.Services.AddScoped<TurnosServicePa>();
 
-            // 🔹 Controladores y vistas MVC
+            // 🔹 MVC
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
-            // 🔹 Configuración de entorno
+            // 🔹 Entorno
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
@@ -65,13 +65,11 @@ namespace TurnosMedicos
             // 🔹 Middleware
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // 🔹 Redirección a login si el usuario no está autenticado
+            // 🔹 Redirección a login si no autenticado
             app.Use(async (context, next) =>
             {
                 var path = context.Request.Path;
@@ -90,13 +88,13 @@ namespace TurnosMedicos
                 await next();
             });
 
-            // 🔹 Rutas MVC y Razor Pages
+            // 🔹 Rutas
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
-            // 🔹 Seed inicial de roles y usuarios
+            // 🔹 Seed inicial
             using (var scope = app.Services.CreateScope())
             {
                 var sp = scope.ServiceProvider;

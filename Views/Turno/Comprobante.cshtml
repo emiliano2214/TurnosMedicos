@@ -1,0 +1,25 @@
+﻿@model TurnosMedicos.Models.ViewModels.SolicitarTurnoResultado
+@{
+    ViewData["Title"] = "Comprobante de Turno";
+}
+<div class="card shadow p-4">
+    <h3 class="mb-3">Comprobante de Turno</h3>
+    <dl class="row">
+        <dt class="col-sm-3">Paciente</dt>
+        <dd class="col-sm-9">@Model.Paciente</dd>
+        <dt class="col-sm-3">Médico</dt>
+        <dd class="col-sm-9">@Model.Medico</dd>
+        <dt class="col-sm-3">Especialidad</dt>
+        <dd class="col-sm-9">@Model.Especialidad</dd>
+        <dt class="col-sm-3">Fecha emisión</dt>
+        <dd class="col-sm-9">@Model.FechaEmisionTurno</dd>
+        <dt class="col-sm-3">Fecha atención</dt>
+        <dd class="col-sm-9">@Model.FechaAtencion</dd>
+        <dt class="col-sm-3">Diagnóstico</dt>
+        <dd class="col-sm-9">@Model.Diagnostico</dd>
+        <dt class="col-sm-3">Tratamiento</dt>
+        <dd class="col-sm-9">@Model.Tratamiento</dd>
+    </dl>
+    <a class="btn btn-secondary" href="javascript:window.print()">Imprimir</a>
+    <a class="btn btn-outline-primary" asp-action="Index">Volver</a>
+</div>

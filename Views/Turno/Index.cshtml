@@ -13,7 +13,10 @@
 
 @if (esStaff || esPac)
 {
-    <a asp-action="Crear" class="btn btn-success mb-3">Agregar Turno</a>
+    <div class="mb-3 d-flex gap-2">
+        <a asp-action="Crear" class="btn btn-success">Agregar Turno</a>
+        @* Quitado: botón Solicitar Turno (Procedimiento) *@
+    </div>
 }
 
 <table class="table table-bordered table-striped datatable">
@@ -36,7 +39,7 @@
                 <td>@(t.Medico != null ? t.Medico.Nombre + " " + t.Medico.Apellido : "No asignado")</td>
                 <td>@t.FechaHora.ToString("g")</td>
                 <td>@t.Estado</td>
-                <td>
+                <td class="d-flex flex-wrap gap-1">
                     @* ---- ADMIN / ADMINISTRATIVO ---- *@
                     @if (esStaff)
                     {
@@ -51,12 +54,14 @@
                     @* ---- PACIENTE ---- *@
                     else if (esPac)
                     {
-                        @* Paciente puede eliminar solo si el turno es futuro *@
                         if (t.FechaHora > DateTime.Now)
                         {
                             <a asp-action="Borrar" asp-route-id="@t.IdTurno" class="btn btn-danger btn-sm">Cancelar</a>
                         }
                     }
+
+                    @* 🔹 Comprobante para cualquiera de los roles *@
+                    <a asp-action="Comprobante" asp-route-id="@t.IdTurno" class="btn btn-info btn-sm">Comprobante</a>
                 </td>
             </tr>
         }

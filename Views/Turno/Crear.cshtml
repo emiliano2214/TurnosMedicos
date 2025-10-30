@@ -1,12 +1,11 @@
-﻿@model TurnosMedicos.Models.Turno
+﻿@model TurnosMedicos.Models.ViewModels.TurnoForm
 @{
-    ViewData["Title"] = "Agregar Turno";
+    ViewData["Title"] = "Crear Turno";
 }
-
-<h2 class="mb-4">@ViewData["Title"]</h2>
+<h2>@ViewData["Title"]</h2>
 
 <form asp-action="Crear" method="post">
-    <partial name="_FormTurno" model="Model" />
+    @Html.Partial("_FormTurno", Model)
     <button type="submit" class="btn btn-primary">Guardar</button>
     <a asp-action="Index" class="btn btn-secondary">Volver</a>
 </form>
