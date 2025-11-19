@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using TurnosMedicos.Data;      // <-- AGREGADO
+using TurnosMedicos.Models;    // <-- AGREGADO
 
 namespace TurnosMedicos.Areas.Identity.Pages.Account
 {
@@ -22,6 +24,7 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ApplicationDbContext _context;   // <-- AGREGADO
 
         public RegisterModel(
             UserManager<UsuarioExt> userManager,
@@ -29,7 +32,8 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account
             SignInManager<UsuarioExt> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            ApplicationDbContext context)          // <-- AGREGADO
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -38,6 +42,7 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account
             _logger = logger;
             _emailSender = emailSender;
             _roleManager = roleManager;
+            _context = context;                   // <-- AGREGADO
         }
 
         // -------- Flags / parámetros --------
@@ -75,6 +80,38 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account
 
             [Display(Name = "Display Name")]
             public string DisplayName { get; set; }
+
+            // ===== CAMPOS PARA PACIENTE / MEDICO =====
+
+            // Datos básicos
+            [Display(Name = "Nombre")]
+            public string Nombre { get; set; }
+
+            [Display(Name = "Apellido")]
+            public string Apellido { get; set; }
+
+            [Display(Name = "DNI")]
+            public string Dni { get; set; }
+
+            [Display(Name = "Teléfono")]
+            public string Telefono { get; set; }
+
+            [Display(Name = "Fecha de Nacimiento")]
+            [DataType(DataType.Date)]
+            public DateTime? FechaNacimiento { get; set; }
+
+            [Display(Name = "Obra Social")]
+            public int? IdObraSocial { get; set; }
+
+            // Solo para médico
+            [Display(Name = "Matrícula")]
+            public string Matricula { get; set; }
+
+            [Display(Name = "Especialidad")]
+            public int? IdEspecialidad { get; set; }
+
+            [Display(Name = "Consultorio")]
+            public int? IdConsultorio { get; set; }
         }
 
         // -------- Para la vista --------
@@ -112,6 +149,7 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account
                     {
                         Email = u.Email,
                         DisplayName = u.DisplayName
+                        // Si quisieras, acá podrías mapear Nombre/Apellido si los guardaras en UsuarioExt
                     };
                     Roles = (await _userManager.GetRolesAsync(u)).ToList();
                 }
@@ -228,6 +266,55 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account
                 foreach (var role in toAssign)
                     if (await _roleManager.RoleExistsAsync(role))
                         await _userManager.AddToRoleAsync(newUser, role);
+
+                // ===== CREAR PACIENTE / MEDICO SEGÚN LOS ROLES ASIGNADOS =====
+                try
+                {
+                    // Si el usuario tiene rol "Paciente"
+                    if (toAssign.Contains("Paciente", StringComparer.OrdinalIgnoreCase))
+                    {
+                        var paciente = new Paciente
+                        {
+                            UserId = newUser.Id,
+                            Nombre = Input.Nombre ?? "",          // evitamos null
+                            Apellido = Input.Apellido ?? "",
+                            Dni = Input.Dni ?? "",                // en tu entidad es [Required]
+                            Email = Input.Email,
+                            Telefono = Input.Telefono,
+                            FechaNacimiento = Input.FechaNacimiento ?? DateTime.Today,
+                            IdObraSocial = Input.IdObraSocial ?? 1 // valor por defecto (ajustá si querés)
+                        };
+
+                        _context.Paciente.Add(paciente);
+                    }
+
+                    // Si el usuario tiene rol "Medico"
+                    if (toAssign.Contains("Medico", StringComparer.OrdinalIgnoreCase))
+                    {
+                        var medico = new Medico
+                        {
+                            UserId = newUser.Id,
+                            Nombre = Input.Nombre ?? "",
+                            Apellido = Input.Apellido ?? "",
+                            Matricula = Input.Matricula ?? "",
+                            IdEspecialidad = Input.IdEspecialidad ?? 1,
+                            IdConsultorio = Input.IdConsultorio ?? 1
+                        };
+
+                        _context.Medico.Add(medico);
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Si algo falla al crear Paciente/Medico lo anotamos en ModelState
+                    // (si querés, podrías también borrar el usuario Identity)
+                    ModelState.AddModelError("", "Error al crear el registro de paciente/médico: " + ex.Message);
+                    return Page();
+                }
+
+                // ===== FIN CREACIÓN PACIENTE / MÉDICO =====
 
                 if (AdminMode && User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                     return RedirectToAction("Index", "Usuarios");

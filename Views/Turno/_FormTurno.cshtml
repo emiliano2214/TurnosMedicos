@@ -4,18 +4,25 @@
 <div class="mb-3">
     <label asp-for="IdPaciente" class="form-label"></label>
 
-    @* Si el usuario es Paciente, no muestres combo: dejá hidden el valor *@
+    @* Si el usuario es Paciente, mostrar solo el nombre y enviar hidden *@
     @if (User.IsInRole("Paciente"))
     {
+        <!-- Envia el ID al backend -->
         <input type="hidden" asp-for="IdPaciente" />
-        <input class="form-control" value="Asignado al usuario" disabled />
+
+        <!-- Muestra el nombre verdadero del paciente -->
+        <input class="form-control"
+               value="@Model.NombrePaciente"
+               disabled />
     }
     else
     {
         <select asp-for="IdPaciente"
                 asp-items="(IEnumerable<SelectListItem>)ViewBag.Pacientes"
-                class="form-control"></select>
+                class="form-control">
+        </select>
     }
+
     <span asp-validation-for="IdPaciente" class="text-danger"></span>
 </div>
 
@@ -23,7 +30,8 @@
     <label asp-for="IdMedico" class="form-label"></label>
     <select asp-for="IdMedico"
             asp-items="(IEnumerable<SelectListItem>)ViewBag.Medicos"
-            class="form-control"></select>
+            class="form-control">
+    </select>
     <span asp-validation-for="IdMedico" class="text-danger"></span>
 </div>
 
@@ -43,7 +51,7 @@
     <span asp-validation-for="Estado" class="text-danger"></span>
 </div>
 
-@* Campos clínicos opcionales (solo para médico/admin, si así querés) *@
+@* Campos clínicos solo para staff *@
 @if (User.IsInRole("Admin") || User.IsInRole("Administrativo") || User.IsInRole("Medico"))
 {
     <div class="mb-3">

@@ -66,7 +66,7 @@ namespace TurnosMedicos.Data
                 {
                     Nombre = "Laura",
                     Apellido = "Gómez",
-                    Matricula = 45678,
+                    Matricula = "45678-AB",
                     IdEspecialidad = esp.IdEspecialidad,
                     IdConsultorio = cons.IdConsultorio
                 });

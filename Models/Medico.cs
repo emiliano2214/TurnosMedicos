@@ -8,6 +8,8 @@ namespace TurnosMedicos.Models
         [Key]
         public int IdMedico { get; set; }
 
+        public string UserId { get; set; }
+
         [Required, StringLength(100)]
         public string Nombre { get; set; }
 
@@ -15,7 +17,7 @@ namespace TurnosMedicos.Models
         public string Apellido { get; set; }
 
         [Required]
-        public int Matricula { get; set; }
+        public string Matricula { get; set; }
 
         [Required]
         [ForeignKey(nameof(Especialidad))]

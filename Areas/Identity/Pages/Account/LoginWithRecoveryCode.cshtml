@@ -1,25 +1,30 @@
 ﻿@page
 @model LoginWithRecoveryCodeModel
 @{
-    ViewData["Title"] = "Recovery code verification";
+    ViewData["Title"] = "Verificación con código de recuperación";
 }
 
-<h1>@ViewData["Title"]</h1>
+<h1 class="text-center">@ViewData["Title"]</h1>
 <hr />
-<p>
-    You have requested to log in with a recovery code. This login will not be remembered until you provide
-    an authenticator app code at log in or disable 2FA and log in again.
+
+<p class="text-center">
+    Solicitaste iniciar sesión usando un código de recuperación.
+    Este inicio de sesión no será recordado hasta que ingreses un código de autenticación de tu app
+    o desactives la autenticación en dos pasos e inicies sesión nuevamente.
 </p>
-<div class="row">
-    <div class="col-md-4">
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
             <div class="form-floating mb-3">
-                <input asp-for="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" />
-                <label asp-for="Input.RecoveryCode" class="form-label"></label>
+                <input asp-for="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="Código de recuperación" />
+                <label asp-for="Input.RecoveryCode" class="form-label">Código de recuperación</label>
                 <span asp-validation-for="Input.RecoveryCode" class="text-danger"></span>
             </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Iniciar sesión</button>
         </form>
     </div>
 </div>

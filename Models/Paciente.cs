@@ -8,6 +8,8 @@ namespace TurnosMedicos.Models
         [Key]
         public int IdPaciente { get; set; }
 
+        public string UserId { get; set; }
+
         [Required, StringLength(100)]
         public string Nombre { get; set; }
 

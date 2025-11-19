@@ -1,26 +1,195 @@
-﻿@model TurnosMedicos.Models.HistoriaClinica
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@model TurnosMedicos.Models.HistoriaClinica
 
+<!-- IDENTIFICACIÓN -->
+<div class="card p-3 mb-3">
+    <h5>Identificación</h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="IdPaciente" class="form-label">Paciente</label>
+            <select asp-for="IdPaciente"
+                    asp-items="@(ViewBag.Pacientes as IEnumerable<SelectListItem>)"
+                    class="form-control"></select>
+            <span asp-validation-for="IdPaciente" class="text-danger"></span>
+        </div>
 
-<div class="mb-3">
-    <label asp-for="IdPaciente" class="form-label"></label>
-    <select asp-for="IdPaciente" asp-items="ViewBag.Pacientes" class="form-control"></select>
-    <span asp-validation-for="IdPaciente" class="text-danger"></span>
+        <div class="col-md-6">
+            <label asp-for="IdMedico" class="form-label">Médico</label>
+            <select asp-for="IdMedico"
+                    asp-items="@(ViewBag.Medicos as IEnumerable<SelectListItem>)"
+                    class="form-control"></select>
+            <span asp-validation-for="IdMedico" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="IdTurno" class="form-label">Turno (opcional)</label>
+            <input asp-for="IdTurno" class="form-control" />
+            <span asp-validation-for="IdTurno" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="FechaRegistro" class="form-label">Fecha de registro</label>
+            <input asp-for="FechaRegistro" type="datetime-local" class="form-control" />
+            <span asp-validation-for="FechaRegistro" class="text-danger"></span>
+        </div>
+    </div>
 </div>
 
-<div class="mb-3">
-    <label asp-for="IdMedico" class="form-label"></label>
-    <select asp-for="IdMedico" asp-items="ViewBag.Medicos" class="form-control"></select>
-    <span asp-validation-for="IdMedico" class="text-danger"></span>
+<!-- MOTIVO Y SÍNTOMAS -->
+<div class="card p-3 mb-3">
+    <h5>Motivo y síntomas</h5>
+
+    <div class="mb-3">
+        <label asp-for="MotivoConsulta" class="form-label">Motivo de consulta</label>
+        <input asp-for="MotivoConsulta" class="form-control" />
+        <span asp-validation-for="MotivoConsulta" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Sintomas" class="form-label">Síntomas</label>
+        <textarea asp-for="Sintomas" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Sintomas" class="text-danger"></span>
+    </div>
 </div>
 
-<div class="mb-3">
-    <label asp-for="FechaRegistro" class="form-label"></label>
-    <input asp-for="FechaRegistro" type="date" class="form-control" />
-    <span asp-validation-for="FechaRegistro" class="text-danger"></span>
+<!-- SIGNOS VITALES -->
+<div class="card p-3 mb-3">
+    <h5>Signos vitales</h5>
+    <div class="row g-3">
+        <div class="col-md-2">
+            <label asp-for="PresionSistolica" class="form-label">Presión arterial sistólica (mmHg)</label>
+            <input asp-for="PresionSistolica" class="form-control" />
+            <span asp-validation-for="PresionSistolica" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="PresionDiastolica" class="form-label">Presión arterial diastólica (mmHg)</label>
+            <input asp-for="PresionDiastolica" class="form-control" />
+            <span asp-validation-for="PresionDiastolica" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="FrecuenciaCardiaca" class="form-label">Frecuencia cardíaca (lpm)</label>
+            <input asp-for="FrecuenciaCardiaca" class="form-control" />
+            <span asp-validation-for="FrecuenciaCardiaca" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="FrecuenciaRespiratoria" class="form-label">Frecuencia respiratoria (rpm)</label>
+            <input asp-for="FrecuenciaRespiratoria" class="form-control" />
+            <span asp-validation-for="FrecuenciaRespiratoria" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="Temperatura" class="form-label">Temperatura (°C)</label>
+            <input asp-for="Temperatura" class="form-control" />
+            <span asp-validation-for="Temperatura" class="text-danger"></span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="SaturacionO2" class="form-label">Saturación de oxígeno (%)</label>
+            <input asp-for="SaturacionO2" class="form-control" />
+            <span asp-validation-for="SaturacionO2" class="text-danger"></span>
+        </div>
+    </div>
 </div>
 
-<div class="mb-3">
-    <label asp-for="Descripcion" class="form-label"></label>
-    <textarea asp-for="Descripcion" class="form-control"></textarea>
-    <span asp-validation-for="Descripcion" class="text-danger"></span>
+<!-- ANTROPOMETRÍA -->
+<div class="card p-3 mb-3">
+    <h5>Antropometría</h5>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label asp-for="PesoKg" class="form-label">Peso (kg)</label>
+            <input asp-for="PesoKg" class="form-control" />
+            <span asp-validation-for="PesoKg" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="AlturaM" class="form-label">Altura (m)</label>
+            <input asp-for="AlturaM" class="form-control" />
+            <span asp-validation-for="AlturaM" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="IMC" class="form-label">Índice de masa corporal</label>
+            <input asp-for="IMC" class="form-control" readonly />
+            <span asp-validation-for="IMC" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ANTECEDENTES Y ALERGIAS -->
+<div class="card p-3 mb-3">
+    <h5>Antecedentes y alergias</h5>
+    <div class="mb-3">
+        <label asp-for="Antecedentes" class="form-label">Antecedentes</label>
+        <textarea asp-for="Antecedentes" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Antecedentes" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Alergias" class="form-label">Alergias</label>
+        <input asp-for="Alergias" class="form-control" />
+        <span asp-validation-for="Alergias" class="text-danger"></span>
+    </div>
+</div>
+
+<!-- EXAMEN Y ESTUDIOS -->
+<div class="card p-3 mb-3">
+    <h5>Examen y estudios</h5>
+    <div class="mb-3">
+        <label asp-for="ExamenFisico" class="form-label">Examen físico</label>
+        <textarea asp-for="ExamenFisico" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="ExamenFisico" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="EstudiosSolicitados" class="form-label">Estudios solicitados</label>
+        <input asp-for="EstudiosSolicitados" class="form-control" />
+        <span asp-validation-for="EstudiosSolicitados" class="text-danger"></span>
+    </div>
+</div>
+
+<!-- DIAGNÓSTICO Y TRATAMIENTO -->
+<div class="card p-3 mb-3">
+    <h5>Diagnóstico y tratamiento</h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Diagnostico" class="form-label">Diagnóstico</label>
+            <select asp-for="Diagnostico"
+                    asp-items="@(ViewBag.Diagnosticos as IEnumerable<SelectListItem>)"
+                    class="form-control">
+                <option value="">-- Seleccione diagnóstico --</option>
+            </select>
+            <span asp-validation-for="Diagnostico" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Tratamiento" class="form-label">Tratamiento</label>
+            <select asp-for="Tratamiento"
+                    asp-items="@(ViewBag.Tratamientos as IEnumerable<SelectListItem>)"
+                    class="form-control">
+                <option value="">-- Seleccione tratamiento --</option>
+            </select>
+            <span asp-validation-for="Tratamiento" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 mt-3">
+        <label asp-for="Indicaciones" class="form-label">Indicaciones</label>
+        <textarea asp-for="Indicaciones" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Indicaciones" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ProximoControl" class="form-label">Próximo control</label>
+        <input asp-for="ProximoControl" type="datetime-local" class="form-control" />
+        <span asp-validation-for="ProximoControl" class="text-danger"></span>
+    </div>
+</div>
+
+<!-- OBSERVACIONES -->
+<div class="card p-3 mb-3">
+    <h5>Observaciones</h5>
+    <div class="mb-3">
+        <label asp-for="Observaciones" class="form-label">Observaciones</label>
+        <textarea asp-for="Observaciones" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Observaciones" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Descripcion" class="form-label">Descripción</label>
+        <textarea asp-for="Descripcion" class="form-control" rows="2"></textarea>
+        <span asp-validation-for="Descripcion" class="text-danger"></span>
+    </div>
 </div>
