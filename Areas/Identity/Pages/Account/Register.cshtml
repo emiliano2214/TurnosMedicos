@@ -105,10 +105,15 @@
                 </small>
 
                 <div class="form-floating mb-3">
-                    <input asp-for="Input.IdObraSocial" class="form-control" />
+                    <select asp-for="Input.IdObraSocial"
+                        asp-items="Model.ObrasSociales"
+                        class="form-select">
+                        <option value="">Seleccione una obra social</option>
+                    </select>
                     <label asp-for="Input.IdObraSocial"></label>
                     <span asp-validation-for="Input.IdObraSocial" class="text-danger"></span>
-                </div>
+            </div>
+
             </div>
 
             @* ======== DATOS MÉDICO (SECCIÓN MOSTRABLE/OCULTABLE) ======== *@
@@ -125,16 +130,25 @@
                 </div>
 
                 <div class="form-floating mb-3">
-                    <input asp-for="Input.IdEspecialidad" class="form-control" />
+                    <select asp-for="Input.IdEspecialidad"
+                        asp-items="Model.Especialidades"
+                        class="form-select">
+                        <option value="">Seleccione una especialidad</option>
+                    </select>
                     <label asp-for="Input.IdEspecialidad"></label>
                     <span asp-validation-for="Input.IdEspecialidad" class="text-danger"></span>
                 </div>
 
                 <div class="form-floating mb-3">
-                    <input asp-for="Input.IdConsultorio" class="form-control" />
+                    <select asp-for="Input.IdConsultorio"
+                        asp-items="Model.Consultorios"
+                        class="form-select">
+                        <option value="">Seleccione un consultorio</option>
+                    </select>
                     <label asp-for="Input.IdConsultorio"></label>
                     <span asp-validation-for="Input.IdConsultorio" class="text-danger"></span>
                 </div>
+
             </div>
 
             @* ======== ROLES ======== *@
