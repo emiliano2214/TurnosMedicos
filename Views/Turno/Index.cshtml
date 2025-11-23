@@ -11,11 +11,10 @@
 
 <h2>@ViewData["Title"]</h2>
 
-@if (esStaff || esPac)
+@if (esStaff || esPac || esMedico)
 {
     <div class="mb-3 d-flex gap-2">
         <a asp-action="Crear" class="btn btn-success">Agregar Turno</a>
-        @* Quitado: botón Solicitar Turno (Procedimiento) *@
     </div>
 }
 
@@ -49,7 +48,8 @@
                     @* ---- MÉDICO ---- *@
                     else if (esMedico)
                     {
-                        <a asp-action="Editar" asp-route-id="@t.IdTurno" class="btn btn-warning btn-sm">Actualizar Estado</a>
+                        @* Medico puede editar (para cambiar estado o reprogramar) *@
+                        <a asp-action="Editar" asp-route-id="@t.IdTurno" class="btn btn-warning btn-sm">Editar</a>
                     }
                     @* ---- PACIENTE ---- *@
                     else if (esPac)

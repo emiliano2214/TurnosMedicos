@@ -8,7 +8,7 @@ using TurnosMedicos.Models;
 
 namespace TurnosMedicos.Controllers
 {
-    [Authorize(Policy = "Staff")]
+    [Authorize(Policy = "EsAdmin")]
     public class MedicoController : GenericController<Medico>
     {
         public MedicoController(ApplicationDbContext context) : base(context) { }

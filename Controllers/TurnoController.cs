@@ -110,6 +110,8 @@ namespace TurnosMedicos.Controllers
                     }
                 }
             }
+            // Medico, Admin, Staff -> CargarSelects() se encarga de llenar la lista de pacientes
+
 
             CargarSelects();
             return View(vm);
@@ -137,6 +139,19 @@ namespace TurnosMedicos.Controllers
                 var pidStr = User.FindFirst("PacienteId")?.Value;
                 if (!int.TryParse(pidStr, out var pid)) return Forbid();
                 vm.IdPaciente = pid;
+            }
+            else if (User.IsInRole("Medico"))
+            {
+                // Medico crea turno para sí mismo
+                var midStr = User.FindFirst("MedicoId")?.Value;
+                if (!int.TryParse(midStr, out var mid)) return Forbid();
+                vm.IdMedico = mid;
+
+                // Debe seleccionar un paciente
+                if (vm.IdPaciente <= 0)
+                {
+                    ModelState.AddModelError(nameof(vm.IdPaciente), "Debe seleccionar un paciente.");
+                }
             }
             else
             {

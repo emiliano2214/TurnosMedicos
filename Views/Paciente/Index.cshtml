@@ -9,7 +9,7 @@
 
 <h2>@ViewData["Title"]</h2>
 
-@if (esStaff)
+@if (esAdmin)
 {
     <a asp-action="Crear" class="btn btn-success mb-3">Agregar Paciente</a>
 }
@@ -37,7 +37,7 @@
                 <td>@p.Telefono</td>
                 <td>@p.Email</td>
                 <td>
-                    @if (esStaff)
+                    @if (esAdmin)
                     {
                         <a asp-action="Editar" asp-route-id="@p.IdPaciente" class="btn btn-warning btn-sm">Editar</a>
                         <a asp-action="Borrar" asp-route-id="@p.IdPaciente" class="btn btn-danger btn-sm">Eliminar</a>

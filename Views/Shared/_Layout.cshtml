@@ -88,15 +88,23 @@
             <aside class="sidebar">
                 <h5 class="mb-3">Secciones</h5>
                 <a asp-controller="Home" asp-action="Index">🏠 Inicio</a>
-                <a asp-controller="Consultorio" asp-action="Index">🏥 Consultorios</a>
-                <a asp-controller="Medico" asp-action="Index">👨‍⚕️ Médicos</a>
-                <a asp-controller="Paciente" asp-action="Index">🧑 Pacientes</a>
+                
+                @* Staff (Admin/Administrativo) *@
+                @if (User.IsInRole("Admin") || User.IsInRole("Administrativo"))
+                {
+                    <a asp-controller="Consultorio" asp-action="Index">🏥 Consultorios</a>
+                    <a asp-controller="Medico" asp-action="Index">👨‍⚕️ Médicos</a>
+                    <a asp-controller="Paciente" asp-action="Index">🧑 Pacientes</a>
+                    <a asp-controller="Especialidad" asp-action="Index">💊 Especialidades</a>
+                    <a asp-controller="ObraSocial" asp-action="Index">🏦 Obras Sociales</a>
+                }
+
+                @* Todos (con restricciones internas) *@
                 <a asp-controller="Turno" asp-action="Index">📅 Turnos</a>
-                <a asp-controller="Especialidad" asp-action="Index">💊 Especialidades</a>
                 <a asp-controller="Tratamiento" asp-action="Index">💉 Tratamientos</a>
-                <a asp-controller="ObraSocial" asp-action="Index">🏦 Obras Sociales</a>
                 <a asp-controller="HistoriaClinica" asp-action="Index">📋 Historias Clínicas</a>
-                @* Solo visible para administradores *@
+
+                @* Solo Admin *@
                 @if (User.IsInRole("Admin"))
                 {
                     <a asp-controller="Usuarios" asp-action="Index">👥 Usuarios</a>
