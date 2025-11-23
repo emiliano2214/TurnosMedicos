@@ -28,10 +28,18 @@
 
 <div class="mb-3">
     <label asp-for="IdMedico" class="form-label"></label>
-    <select asp-for="IdMedico"
-            asp-items="(IEnumerable<SelectListItem>)ViewBag.Medicos"
-            class="form-control">
-    </select>
+    @if (User.IsInRole("Medico"))
+    {
+        <input type="hidden" asp-for="IdMedico" />
+        <input class="form-control" value="@Model.NombreMedico" disabled />
+    }
+    else
+    {
+        <select asp-for="IdMedico"
+                asp-items="(IEnumerable<SelectListItem>)ViewBag.Medicos"
+                class="form-control">
+        </select>
+    }
     <span asp-validation-for="IdMedico" class="text-danger"></span>
 </div>
 

@@ -9,6 +9,7 @@
         public string Estado { get; set; } = "Pendiente";
 
         public string? NombrePaciente { get; set; }
+        public string? NombreMedico { get; set; }
 
         public string? Diagnostico { get; set; }
         public string? Tratamiento { get; set; }

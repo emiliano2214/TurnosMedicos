@@ -112,6 +112,19 @@ namespace TurnosMedicos.Controllers
             }
             // Medico, Admin, Staff -> CargarSelects() se encarga de llenar la lista de pacientes
 
+            if (User.IsInRole("Medico"))
+            {
+                var midStr = User.FindFirst("MedicoId")?.Value;
+                if (int.TryParse(midStr, out var mid))
+                {
+                    vm.IdMedico = mid;
+                    var medico = _contexts.Medico.FirstOrDefault(m => m.IdMedico == mid);
+                    if (medico != null)
+                    {
+                        vm.NombreMedico = $"{medico.Nombre} {medico.Apellido}";
+                    }
+                }
+            }
 
             CargarSelects();
             return View(vm);

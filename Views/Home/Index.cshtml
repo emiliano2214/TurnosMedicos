@@ -9,15 +9,30 @@
     <!-- Encabezado principal -->
     <header class="text-center mb-5">
         <h1 class="display-4">Bienvenido, @Model.Usuario</h1>
-        <p class="lead text-muted">Resumen general del sistema de turnos médicos</p>
+        <p class="lead text-muted">
+            @if (User.IsInRole("Admin") || User.IsInRole("Administrativo"))
+            {
+                <span>Resumen general del sistema de turnos médicos</span>
+            }
+            else if (User.IsInRole("Medico"))
+            {
+                <span>Panel de Médico - Próximos Turnos</span>
+            }
+            else if (User.IsInRole("Paciente"))
+            {
+                <span>Panel de Paciente - Mis Turnos</span>
+            }
+            else
+            {
+                <span>Sistema de Turnos Médicos</span>
+            }
+        </p>
 
         @* Botonera de administración (solo visible para rol Admin) *@
         @if (User.IsInRole("Admin"))
         {
             <div class="mt-3 d-flex gap-2 justify-content-center">
-                
-
-                @* Register en modo Admin (no loguea al nuevo usuario) *@
+                @* Register en modo Admin *@
                 <a class="btn btn-primary"
                    asp-area="Identity"
                    asp-page="/Account/Register"
@@ -29,72 +44,204 @@
         }
     </header>
 
-    <!-- Sección de Personas -->
-    <section class="mb-5">
-        <h2 class="mb-3 border-bottom pb-2">Personas</h2>
-        <div class="row text-center">
-            <div class="col-md-4 mb-3">
-                <div class="p-4 bg-primary text-white rounded">
-                    <h3>Pacientes</h3>
-                    <p class="fs-2 fw-bold">@Model.TotalPacientes</p>
+    @* ================================================================= *@
+    @* VISTA PARA ADMIN / ADMINISTRATIVO (DASHBOARD COMPLETO) *@
+    @* ================================================================= *@
+    @if (User.IsInRole("Admin") || User.IsInRole("Administrativo"))
+    {
+        <!-- Sección de Personas -->
+        <section class="mb-5">
+            <h2 class="mb-3 border-bottom pb-2">Personas</h2>
+            <div class="row text-center">
+                <div class="col-md-4 mb-3">
+                    <div class="p-4 bg-primary text-white rounded">
+                        <h3>Pacientes</h3>
+                        <p class="fs-2 fw-bold">@Model.TotalPacientes</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <div class="p-4 bg-success text-white rounded">
+                        <h3>Médicos</h3>
+                        <p class="fs-2 fw-bold">@Model.TotalMedicos</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <div class="p-4 bg-info text-white rounded">
+                        <h3>Usuarios</h3>
+                        <p class="fs-2 fw-bold mb-1">@Model.TotalUsuarios</p>
+                        <small class="d-block">Confirmados: <strong>@Model.TotalUsuariosConfirm</strong></small>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <div class="col-md-4 mb-3">
-                <div class="p-4 bg-success text-white rounded">
-                    <h3>Médicos</h3>
-                    <p class="fs-2 fw-bold">@Model.TotalMedicos</p>
+        <!-- Sección de Turnos -->
+        <section class="mb-5">
+            <h2 class="mb-3 border-bottom pb-2">Turnos</h2>
+            <div class="row text-center">
+                <div class="col-md-12 mb-3">
+                    <div class="p-4 bg-warning text-dark rounded">
+                        <h3>Total Turnos</h3>
+                        <p class="fs-2 fw-bold">@Model.TotalTurnos</p>
+                        <small>Pendientes: @Model.TurnosPendientes | Confirmados: @Model.TurnosConfirmados</small>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <div class="col-md-4 mb-3">
-                <div class="p-4 bg-info text-white rounded">
-                    <h3>Usuarios</h3>
-                    <p class="fs-2 fw-bold mb-1">@Model.TotalUsuarios</p>
-                    <small class="d-block">Confirmados: <strong>@Model.TotalUsuariosConfirm</strong></small>
+        <!-- Sección de Servicios -->
+        <section class="mb-5">
+            <h2 class="mb-3 border-bottom pb-2">Servicios</h2>
+            <div class="row text-center">
+                <div class="col-md-4 mb-3">
+                    <div class="p-4 bg-info text-white rounded">
+                        <h3>Obras Sociales</h3>
+                        <p class="fs-2 fw-bold">@Model.TotalObrasSociales</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-4 bg-secondary text-white rounded">
+                        <h3>Especialidades</h3>
+                        <p class="fs-2 fw-bold">@Model.TotalEspecialidades</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-4 bg-dark text-white rounded">
+                        <h3>Consultorios</h3>
+                        <p class="fs-2 fw-bold">@Model.TotalConsultorios</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+
+    @* ================================================================= *@
+    @* VISTA PARA MÉDICO (SUS PRÓXIMOS TURNOS) *@
+    @* ================================================================= *@
+    else if (User.IsInRole("Medico"))
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">Mis Próximos Turnos</h4>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Turnos != null && Model.Turnos.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha y Hora</th>
+                                            <th>Paciente</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var t in Model.Turnos)
+                                        {
+                                            <tr>
+                                                <td>@t.FechaHora.ToString("g")</td>
+                                                <td>@(t.Paciente != null ? $"{t.Paciente.Nombre} {t.Paciente.Apellido}" : "No asignado")</td>
+                                                <td>
+                                                    <span class="badge @(t.Estado == "Confirmado" ? "bg-success" : "bg-warning text-dark")">
+                                                        @t.Estado
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a asp-controller="Turno" asp-action="Editar" asp-route-id="@t.IdTurno" class="btn btn-sm btn-outline-primary">Ver/Editar</a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                No tenés turnos asignados para los próximos días.
+                            </div>
+                        }
+                        <div class="mt-3">
+                            <a asp-controller="Turno" asp-action="Index" class="btn btn-outline-secondary">Ver agenda completa</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
+    }
 
+    @* ================================================================= *@
+    @* VISTA PARA PACIENTE (SUS PRÓXIMOS TURNOS + SOLICITAR) *@
+    @* ================================================================= *@
+    else if (User.IsInRole("Paciente"))
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                
+                <div class="text-center mb-4">
+                    <a asp-controller="Turno" asp-action="Crear" class="btn btn-lg btn-success shadow">
+                        <i class="bi bi-calendar-plus"></i> Solicitar Nuevo Turno
+                    </a>
+                </div>
 
-    <!-- Sección de Turnos -->
-    <section class="mb-5">
-        <h2 class="mb-3 border-bottom pb-2">Turnos</h2>
-        <div class="row text-center">
-            <div class="col-md-12 mb-3">
-                <div class="p-4 bg-warning text-dark rounded">
-                    <h3>Total Turnos</h3>
-                    <p class="fs-2 fw-bold">@Model.TotalTurnos</p>
-                    <small>Pendientes: @Model.TurnosPendientes | Confirmados: @Model.TurnosConfirmados</small>
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Mis Próximos Turnos</h4>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Turnos != null && Model.Turnos.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha y Hora</th>
+                                            <th>Médico</th>
+                                            <th>Especialidad</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var t in Model.Turnos)
+                                        {
+                                            <tr>
+                                                <td>@t.FechaHora.ToString("g")</td>
+                                                <td>@(t.Medico != null ? $"{t.Medico.Nombre} {t.Medico.Apellido}" : "No asignado")</td>
+                                                <td>@(t.Medico?.Especialidad?.Nombre ?? "-")</td>
+                                                <td>
+                                                    <span class="badge @(t.Estado == "Confirmado" ? "bg-success" : "bg-warning text-dark")">
+                                                        @t.Estado
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a asp-controller="Turno" asp-action="Comprobante" asp-route-id="@t.IdTurno" class="btn btn-sm btn-info text-white">Comprobante</a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                No tenés turnos programados próximamente.
+                            </div>
+                        }
+                        <div class="mt-3">
+                            <a asp-controller="Turno" asp-action="Index" class="btn btn-outline-secondary">Ver historial completo</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Sección de Servicios -->
-    <section class="mb-5">
-        <h2 class="mb-3 border-bottom pb-2">Servicios</h2>
-        <div class="row text-center">
-            <div class="col-md-4 mb-3">
-                <div class="p-4 bg-info text-white rounded">
-                    <h3>Obras Sociales</h3>
-                    <p class="fs-2 fw-bold">@Model.TotalObrasSociales</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="p-4 bg-secondary text-white rounded">
-                    <h3>Especialidades</h3>
-                    <p class="fs-2 fw-bold">@Model.TotalEspecialidades</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="p-4 bg-dark text-white rounded">
-                    <h3>Consultorios</h3>
-                    <p class="fs-2 fw-bold">@Model.TotalConsultorios</p>
-                </div>
-            </div>
-        </div>
-    </section>
+    }
 
 </div>
