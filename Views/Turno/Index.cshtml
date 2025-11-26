@@ -43,7 +43,7 @@
                     @if (esStaff)
                     {
                         <a asp-action="Editar" asp-route-id="@t.IdTurno" class="btn btn-warning btn-sm">Editar</a>
-                        <a asp-action="Borrar" asp-route-id="@t.IdTurno" class="btn btn-danger btn-sm">Eliminar</a>
+                        <a asp-action="Borrar" asp-route-id="@t.IdTurno" class="btn btn-danger btn-sm delete-confirm">Eliminar</a>
                     }
                     @* ---- MÉDICO ---- *@
                     else if (esMedico)
@@ -56,7 +56,7 @@
                     {
                         if (t.FechaHora > DateTime.Now)
                         {
-                            <a asp-action="Borrar" asp-route-id="@t.IdTurno" class="btn btn-danger btn-sm">Cancelar</a>
+                            <a asp-action="Borrar" asp-route-id="@t.IdTurno" class="btn btn-danger btn-sm delete-confirm">Cancelar</a>
                         }
                     }
 

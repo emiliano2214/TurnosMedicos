@@ -137,6 +137,38 @@
     <!-- Script del sitio -->
     <script src="~/js/site.js" asp-append-version="true"></script>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Notificaciones automáticas con SweetAlert2 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '@TempData["Success"]',
+                    confirmButtonText: 'Aceptar'
+                });
+                </text>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '@TempData["Error"]',
+                    confirmButtonText: 'Aceptar'
+                });
+                </text>
+            }
+        });
+    </script>
+
     <!-- Inicialización global de DataTables -->
     <script>
         $(document).ready(function () {

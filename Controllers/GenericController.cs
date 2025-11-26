@@ -36,8 +36,10 @@ namespace TurnosMedicos.Controllers
             {
                 _dbSet.Add(entity);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Registro creado correctamente.";
                 return RedirectToAction(nameof(Index));
             }
+            TempData["Error"] = "Error al crear el registro. Verifique los datos.";
             return View(entity);
         }
 
@@ -54,10 +56,15 @@ namespace TurnosMedicos.Controllers
         [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Editar(int id, TEntity entity)
         {
-            if (!ModelState.IsValid) return View(entity);
+            if (!ModelState.IsValid) 
+            {
+                TempData["Error"] = "Error al editar el registro. Verifique los datos.";
+                return View(entity);
+            }
 
             _context.Update(entity);
             await _context.SaveChangesAsync();
+            TempData["Success"] = "Registro actualizado correctamente.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -69,6 +76,7 @@ namespace TurnosMedicos.Controllers
 
             _dbSet.Remove(entity);
             await _context.SaveChangesAsync();
+            TempData["Success"] = "Registro eliminado correctamente.";
             return RedirectToAction(nameof(Index));
         }
     }

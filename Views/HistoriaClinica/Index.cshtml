@@ -42,14 +42,14 @@
                     @if (esAdmin)
                     {
                         <a asp-action="Editar" asp-route-id="@h.IdHistoria" class="btn btn-warning btn-sm">Editar</a>
-                        <a asp-action="Borrar" asp-route-id="@h.IdHistoria" class="btn btn-danger btn-sm">Eliminar</a>
+                        <a asp-action="Borrar" asp-route-id="@h.IdHistoria" class="btn btn-danger btn-sm delete-confirm">Eliminar</a>
                     }
 
                     @* Médico: puede ABM. Si querés restringir a “solo sus historias”, activá el if de ownership *@
                     @if (esMedico /* && medicoIdUsuario.HasValue && h.IdMedico == medicoIdUsuario.Value */)
                     {
                         <a asp-action="Editar" asp-route-id="@h.IdHistoria" class="btn btn-warning btn-sm">Editar</a>
-                        <a asp-action="Borrar" asp-route-id="@h.IdHistoria" class="btn btn-danger btn-sm">Eliminar</a>
+                        <a asp-action="Borrar" asp-route-id="@h.IdHistoria" class="btn btn-danger btn-sm delete-confirm">Eliminar</a>
                     }
 
                     @* Paciente: sin botones *@

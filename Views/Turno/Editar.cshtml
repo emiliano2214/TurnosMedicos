@@ -6,7 +6,7 @@
 
 <form asp-action="Editar" method="post">
     <input type="hidden" asp-for="IdTurno" />
-    @Html.Partial("_FormTurno", Model)
+    <partial name="_FormTurno" model="Model" />
     <button type="submit" class="btn btn-primary">Guardar</button>
     <a asp-action="Index" class="btn btn-secondary">Volver</a>
 </form>

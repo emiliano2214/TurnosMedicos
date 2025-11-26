@@ -8,16 +8,18 @@
 <h2>Editar Usuario</h2>
 
 <form asp-action="Edit" method="post">
-    <input type="hidden" name="id" value="@Model.Id" />
+    <input type="hidden" asp-for="Id" name="id" />
 
     <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input name="email" class="form-control" value="@Model.Email" />
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" name="email" />
+        <span asp-validation-for="Email" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Display Name</label>
-        <input name="displayName" class="form-control" value="@Model.DisplayName" />
+        <label asp-for="DisplayName" class="form-label">Nombre para mostrar</label>
+        <input asp-for="DisplayName" class="form-control" name="displayName" />
+        <span asp-validation-for="DisplayName" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
@@ -35,9 +37,4 @@
     <a asp-action="Index" class="btn btn-secondary">Volver</a>
 </form>
 
-<div class="text-danger mt-3">
-    @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-    {
-        <div>@modelError.ErrorMessage</div>
-    }
-</div>
+<div asp-validation-summary="All" class="text-danger mt-3"></div>

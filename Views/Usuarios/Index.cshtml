@@ -28,6 +28,12 @@
 </table>
 
 @section Scripts {
+    <!-- Formulario oculto para eliminar usuario -->
+    <form id="formDeleteUser" method="post" asp-controller="Usuarios" asp-action="Delete">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" id="deleteUserId" />
+    </form>
+
     <script>
         $(function () {
             const regBase = '@Url.Page("/Account/Register", new { area = "Identity" })';
@@ -43,19 +49,39 @@
                         data: null, orderable: false,
                         render: function (row) {
                             const editUrl = `${regBase}?AdminMode=true&Mode=edit&TargetUserId=${row.id}`;
-                            const delUrl  = `${regBase}?AdminMode=true&Mode=delete&TargetUserId=${row.id}`;
-
+                            
                             return `
                               <div class="btn-group">
                                 <!-- Modificar -->
                                 <a href="${editUrl}" class="btn btn-sm btn-warning">Editar</a>
                                 <!-- Baja -->
-                                <a href="${delUrl}" class="btn btn-sm btn-danger ms-2">Eliminar</a>
+                                <button class="btn btn-sm btn-danger ms-2 delete-user-btn" data-id="${row.id}">Eliminar</button>
                               </div>`;
                         }
                     }
                 ]
                 // language: { url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json' }
+            });
+
+            // Manejo de eliminación con SweetAlert2
+            $(document).on('click', '.delete-user-btn', function() {
+                const userId = $(this).data('id');
+                
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "No podrás revertir esto",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#deleteUserId').val(userId);
+                        $('#formDeleteUser').submit();
+                    }
+                });
             });
         });
     </script>

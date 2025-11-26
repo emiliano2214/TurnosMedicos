@@ -5,7 +5,7 @@
 <h2>@ViewData["Title"]</h2>
 
 <form asp-action="Crear" method="post">
-    @Html.Partial("_FormTurno", Model)
+    <partial name="_FormTurno" model="Model" />
     <button type="submit" class="btn btn-primary">Guardar</button>
     <a asp-action="Index" class="btn btn-secondary">Volver</a>
 </form>

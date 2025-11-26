@@ -33,7 +33,7 @@
                     @if (esStaff)
                     {
                         <a asp-action="Editar" asp-route-id="@e.IdEspecialidad" class="btn btn-warning btn-sm">Editar</a>
-                        <a asp-action="Borrar" asp-route-id="@e.IdEspecialidad" class="btn btn-danger btn-sm">Eliminar</a>
+                        <a asp-action="Borrar" asp-route-id="@e.IdEspecialidad" class="btn btn-danger btn-sm delete-confirm">Eliminar</a>
                     }
                 </td>
             </tr>
