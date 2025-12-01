@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using TurnosMedicos.Data;      
 using TurnosMedicos.Models;    
 
@@ -359,6 +360,38 @@ namespace TurnosMedicos.Areas.Identity.Pages.Account
                     }
 
                     await _context.SaveChangesAsync();
+
+                    // ===== VINCULAR USUARIO CON PACIENTE/MEDICO =====
+                    bool userUpdated = false;
+                    if (toAssign.Contains("Paciente", StringComparer.OrdinalIgnoreCase))
+                    {
+                        var paciente = await _context.Paciente.FirstOrDefaultAsync(p => p.UserId == newUser.Id);
+                        if (paciente != null)
+                        {
+                            newUser.PacienteId = paciente.IdPaciente;
+                            userUpdated = true;
+                        }
+                    }
+
+                    if (toAssign.Contains("Medico", StringComparer.OrdinalIgnoreCase))
+                    {
+                        var medico = await _context.Medico.FirstOrDefaultAsync(m => m.UserId == newUser.Id);
+                        if (medico != null)
+                        {
+                            newUser.MedicoId = medico.IdMedico;
+                            userUpdated = true;
+                        }
+                    }
+
+                    if (userUpdated)
+                    {
+                        var updateResult = await _userManager.UpdateAsync(newUser);
+                        if (!updateResult.Succeeded)
+                        {
+                            // Log warning but don't fail the whole request as the entities are created
+                            _logger.LogWarning("User created and entity linked, but failed to update User with foreign key IDs.");
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {

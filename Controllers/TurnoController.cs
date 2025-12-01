@@ -59,6 +59,43 @@ namespace TurnosMedicos.Controllers
         }
 
         // ==========================
+        //  HELPERS (Fallback Lookup)
+        // ==========================
+        private int? GetPacienteId()
+        {
+            // 1. Try Claim
+            var pidStr = User.FindFirst("PacienteId")?.Value;
+            if (int.TryParse(pidStr, out var pid)) return pid;
+
+            // 2. Fallback: DB Lookup by UserId
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var paciente = _contexts.Paciente.AsNoTracking().FirstOrDefault(p => p.UserId == userId);
+                if (paciente != null) return paciente.IdPaciente;
+            }
+
+            return null;
+        }
+
+        private int? GetMedicoId()
+        {
+            // 1. Try Claim
+            var midStr = User.FindFirst("MedicoId")?.Value;
+            if (int.TryParse(midStr, out var mid)) return mid;
+
+            // 2. Fallback: DB Lookup by UserId
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var medico = _contexts.Medico.AsNoTracking().FirstOrDefault(m => m.UserId == userId);
+                if (medico != null) return medico.IdMedico;
+            }
+
+            return null;
+        }
+
+        // ==========================
         //  INDEX (override)
         // ==========================
         public override async Task<IActionResult> Index()
@@ -70,15 +107,15 @@ namespace TurnosMedicos.Controllers
 
             if (User.IsInRole("Paciente"))
             {
-                var pidStr = User.FindFirst("PacienteId")?.Value;
-                if (int.TryParse(pidStr, out var pid))
-                    q = q.Where(t => t.IdPaciente == pid);
+                var pid = GetPacienteId();
+                if (pid.HasValue)
+                    q = q.Where(t => t.IdPaciente == pid.Value);
             }
             else if (User.IsInRole("Medico"))
             {
-                var midStr = User.FindFirst("MedicoId")?.Value;
-                if (int.TryParse(midStr, out var mid))
-                    q = q.Where(t => t.IdMedico == mid);
+                var mid = GetMedicoId();
+                if (mid.HasValue)
+                    q = q.Where(t => t.IdMedico == mid.Value);
             }
 
             var lista = await q.AsNoTracking().ToListAsync();
@@ -98,12 +135,12 @@ namespace TurnosMedicos.Controllers
 
             if (User.IsInRole("Paciente"))
             {
-                var pidStr = User.FindFirst("PacienteId")?.Value;
-                if (int.TryParse(pidStr, out var pid))
+                var pid = GetPacienteId();
+                if (pid.HasValue)
                 {
-                    vm.IdPaciente = pid;
+                    vm.IdPaciente = pid.Value;
 
-                    var paciente = _contexts.Paciente.FirstOrDefault(p => p.IdPaciente == pid);
+                    var paciente = _contexts.Paciente.FirstOrDefault(p => p.IdPaciente == pid.Value);
                     if (paciente != null)
                     {
                         vm.NombrePaciente = $"{paciente.Nombre} {paciente.Apellido}";
@@ -114,11 +151,11 @@ namespace TurnosMedicos.Controllers
 
             if (User.IsInRole("Medico"))
             {
-                var midStr = User.FindFirst("MedicoId")?.Value;
-                if (int.TryParse(midStr, out var mid))
+                var mid = GetMedicoId();
+                if (mid.HasValue)
                 {
-                    vm.IdMedico = mid;
-                    var medico = _contexts.Medico.FirstOrDefault(m => m.IdMedico == mid);
+                    vm.IdMedico = mid.Value;
+                    var medico = _contexts.Medico.FirstOrDefault(m => m.IdMedico == mid.Value);
                     if (medico != null)
                     {
                         vm.NombreMedico = $"{medico.Nombre} {medico.Apellido}";
@@ -149,17 +186,17 @@ namespace TurnosMedicos.Controllers
         {
             if (User.IsInRole("Paciente"))
             {
-                var pidStr = User.FindFirst("PacienteId")?.Value;
-                if (!int.TryParse(pidStr, out var pid)) return Forbid();
-                vm.IdPaciente = pid;
+                var pid = GetPacienteId();
+                if (!pid.HasValue) return Forbid();
+                vm.IdPaciente = pid.Value;
                 vm.Estado = "Pendiente"; // Force status for patients
             }
             else if (User.IsInRole("Medico"))
             {
                 // Medico crea turno para sí mismo
-                var midStr = User.FindFirst("MedicoId")?.Value;
-                if (!int.TryParse(midStr, out var mid)) return Forbid();
-                vm.IdMedico = mid;
+                var mid = GetMedicoId();
+                if (!mid.HasValue) return Forbid();
+                vm.IdMedico = mid.Value;
 
                 // Debe seleccionar un paciente
                 if (vm.IdPaciente <= 0)
@@ -212,14 +249,14 @@ namespace TurnosMedicos.Controllers
             // Autorización
             if (User.IsInRole("Paciente"))
             {
-                var pidStr = User.FindFirst("PacienteId")?.Value;
-                if (!int.TryParse(pidStr, out var pid) || turno.IdPaciente != pid)
+                var pid = GetPacienteId();
+                if (!pid.HasValue || turno.IdPaciente != pid.Value)
                     return Forbid();
             }
             else if (User.IsInRole("Medico"))
             {
-                var midStr = User.FindFirst("MedicoId")?.Value;
-                if (!int.TryParse(midStr, out var mid) || turno.IdMedico != mid)
+                var mid = GetMedicoId();
+                if (!mid.HasValue || turno.IdMedico != mid.Value)
                     return Forbid();
             }
 
@@ -272,17 +309,17 @@ namespace TurnosMedicos.Controllers
 
             if (User.IsInRole("Paciente"))
             {
-                var pidStr = User.FindFirst("PacienteId")?.Value;
-                if (!int.TryParse(pidStr, out var pid) || actual.IdPaciente != pid)
+                var pid = GetPacienteId();
+                if (!pid.HasValue || actual.IdPaciente != pid.Value)
                     return Forbid();
 
-                vm.IdPaciente = pid;
+                vm.IdPaciente = pid.Value;
                 vm.IdMedico = actual.IdMedico;
             }
             else if (User.IsInRole("Medico"))
             {
-                var midStr = User.FindFirst("MedicoId")?.Value;
-                if (!int.TryParse(midStr, out var mid) || actual.IdMedico != mid)
+                var mid = GetMedicoId();
+                if (!mid.HasValue || actual.IdMedico != mid.Value)
                     return Forbid();
 
                 vm.IdPaciente = actual.IdPaciente;
@@ -364,8 +401,8 @@ namespace TurnosMedicos.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Solicitar(int idEspecialidad, DateTime fechaAtencion)
         {
-            var pidStr = User.FindFirst("PacienteId")?.Value;
-            if (!int.TryParse(pidStr, out var idPaciente))
+            var pid = GetPacienteId();
+            if (!pid.HasValue)
                 return Forbid();
 
             if (idEspecialidad <= 0 || fechaAtencion == default)
@@ -376,7 +413,7 @@ namespace TurnosMedicos.Controllers
 
             try
             {
-                var comprobante = await _pa.SolicitarTurnoAsync(idPaciente, idEspecialidad, fechaAtencion);
+                var comprobante = await _pa.SolicitarTurnoAsync(pid.Value, idEspecialidad, fechaAtencion);
                 return View("Comprobante", comprobante);
             }
             catch (Exception ex)
