@@ -29,19 +29,7 @@
         </p>
 
         @* Botonera de administración (solo visible para rol Admin) *@
-        @if (User.IsInRole("Admin"))
-        {
-            <div class="mt-3 d-flex gap-2 justify-content-center">
-                @* Register en modo Admin *@
-                <a class="btn btn-primary"
-                   asp-area="Identity"
-                   asp-page="/Account/Register"
-                   asp-route-AdminMode="true"
-                   asp-route-RolesCsv="">
-                    <i class="bi bi-person-plus"></i> Nuevo usuario
-                </a>
-            </div>
-        }
+        
     </header>
 
     @* ================================================================= *@
@@ -54,21 +42,21 @@
             <h2 class="mb-3 border-bottom pb-2">Personas</h2>
             <div class="row text-center">
                 <div class="col-md-4 mb-3">
-                    <div class="p-4 bg-primary text-white rounded">
-                        <h3>Pacientes</h3>
+                    <div class="p-4 bg-primary text-white rounded shadow-sm">
+                        <h3 class="text-white">Pacientes</h3>
                         <p class="fs-2 fw-bold">@Model.TotalPacientes</p>
                     </div>
                 </div>
 
                 <div class="col-md-4 mb-3">
-                    <div class="p-4 bg-success text-white rounded">
+                    <div class="p-4 bg-success text-white rounded shadow-sm">
                         <h3>Médicos</h3>
                         <p class="fs-2 fw-bold">@Model.TotalMedicos</p>
                     </div>
                 </div>
 
                 <div class="col-md-4 mb-3">
-                    <div class="p-4 bg-info text-white rounded">
+                    <div class="p-4 bg-info text-white rounded shadow-sm">
                         <h3>Usuarios</h3>
                         <p class="fs-2 fw-bold mb-1">@Model.TotalUsuarios</p>
                         <small class="d-block">Confirmados: <strong>@Model.TotalUsuariosConfirm</strong></small>
@@ -82,7 +70,7 @@
             <h2 class="mb-3 border-bottom pb-2">Turnos</h2>
             <div class="row text-center">
                 <div class="col-md-12 mb-3">
-                    <div class="p-4 bg-warning text-dark rounded">
+                    <div class="p-4 bg-warning text-dark rounded shadow-sm">
                         <h3>Total Turnos</h3>
                         <p class="fs-2 fw-bold">@Model.TotalTurnos</p>
                         <small>Pendientes: @Model.TurnosPendientes | Confirmados: @Model.TurnosConfirmados</small>
@@ -93,24 +81,26 @@
 
         <!-- Sección de Servicios -->
         <section class="mb-5">
-            <h2 class="mb-3 border-bottom pb-2">Servicios</h2>
-            <div class="row text-center">
-                <div class="col-md-4 mb-3">
-                    <div class="p-4 bg-info text-white rounded">
-                        <h3>Obras Sociales</h3>
-                        <p class="fs-2 fw-bold">@Model.TotalObrasSociales</p>
+            <h2 class="mb-3 border-bottom pb-2">SERVICIOS</h2>
+            <div class="row text-center align-items-stretch">
+                <div class="col-md-4 mb-3 d-flex">
+                    <div class="p-4 bg-danger text-white rounded shadow-sm flex-fill">
+                        <h3>OBRAS SOCIALES</h3>
+                        <p class="fs-2 fw-bold mb-0">@Model.TotalObrasSociales</p>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <div class="p-4 bg-secondary text-white rounded">
-                        <h3>Especialidades</h3>
-                        <p class="fs-2 fw-bold">@Model.TotalEspecialidades</p>
+
+                <div class="col-md-4 mb-3 d-flex">
+                    <div class="p-4 card-especialidades rounded shadow-sm flex-fill">
+                        <h3>ESPECIALIDADES</h3>
+                        <p class="fs-2 fw-bold mb-0">@Model.TotalEspecialidades</p>
                     </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <div class="p-4 bg-dark text-white rounded">
-                        <h3>Consultorios</h3>
-                        <p class="fs-2 fw-bold">@Model.TotalConsultorios</p>
+
+                <div class="col-md-4 mb-3 d-flex">
+                    <div class="p-4 bg-dark text-white rounded shadow-sm flex-fill">
+                        <h3>CONSULTORIOS</h3>
+                        <p class="fs-2 fw-bold mb-0">@Model.TotalConsultorios</p>
                     </div>
                 </div>
             </div>
@@ -153,7 +143,9 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <a asp-controller="Turno" asp-action="Editar" asp-route-id="@t.IdTurno" class="btn btn-sm btn-outline-primary">Ver/Editar</a>
+                                                    <a asp-controller="Turno" asp-action="Editar" asp-route-id="@t.IdTurno" class="btn btn-sm btn-outline-primary">
+                                                        Ver/Editar
+                                                    </a>
                                                 </td>
                                             </tr>
                                         }
@@ -183,7 +175,7 @@
     {
         <div class="row justify-content-center">
             <div class="col-md-10">
-                
+
                 <div class="text-center mb-4">
                     <a asp-controller="Turno" asp-action="Crear" class="btn btn-lg btn-success shadow">
                         <i class="bi bi-calendar-plus"></i> Solicitar Nuevo Turno
@@ -221,7 +213,9 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <a asp-controller="Turno" asp-action="Comprobante" asp-route-id="@t.IdTurno" class="btn btn-sm btn-info text-white">Comprobante</a>
+                                                    <a asp-controller="Turno" asp-action="Comprobante" asp-route-id="@t.IdTurno" class="btn btn-sm btn-info text-white">
+                                                        Comprobante
+                                                    </a>
                                                 </td>
                                             </tr>
                                         }

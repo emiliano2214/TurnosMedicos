@@ -51,11 +51,19 @@
 
 <div class="mb-3">
     <label asp-for="Estado" class="form-label"></label>
-    <select asp-for="Estado" class="form-control">
-        <option value="Pendiente">Pendiente</option>
-        <option value="Confirmado">Confirmado</option>
-        <option value="Cancelado">Cancelado</option>
-    </select>
+    @if (User.IsInRole("Paciente"))
+    {
+        <input type="hidden" asp-for="Estado" value="Pendiente" />
+        <input class="form-control" value="Pendiente" disabled />
+    }
+    else
+    {
+        <select asp-for="Estado" class="form-control">
+            <option value="Pendiente">Pendiente</option>
+            <option value="Confirmado">Confirmado</option>
+            <option value="Cancelado">Cancelado</option>
+        </select>
+    }
     <span asp-validation-for="Estado" class="text-danger"></span>
 </div>
 

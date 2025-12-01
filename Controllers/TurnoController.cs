@@ -152,6 +152,7 @@ namespace TurnosMedicos.Controllers
                 var pidStr = User.FindFirst("PacienteId")?.Value;
                 if (!int.TryParse(pidStr, out var pid)) return Forbid();
                 vm.IdPaciente = pid;
+                vm.Estado = "Pendiente"; // Force status for patients
             }
             else if (User.IsInRole("Medico"))
             {
