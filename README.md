@@ -2,14 +2,44 @@
 
 Sistema de gestión de turnos médicos desarrollado en ASP.NET Core 8 MVC.
 
-## 📋 Descripción
+## Descripción
 Aplicación web para la administración de clínicas, permitiendo la gestión de:
 - **Pacientes y Médicos**
 - **Turnos y Agendas**
 - **Historias Clínicas y Tratamientos**
 - **Obras Sociales y Especialidades**
 
-El sistema cuenta con roles diferenciados (Admin, Administrativo, Médico, Paciente) para asegurar la privacidad y el correcto flujo de trabajo.
+El sistema cuenta con roles diferenciados para asegurar la privacidad y el correcto flujo de trabajo.
+
+## Roles y Alcance
+El sistema define 4 roles principales con permisos específicos:
+
+### 1. Admin (Administrador)
+**Alcance:** Total.
+- Tiene control absoluto del sistema.
+- **Gestión:** Puede crear, editar y eliminar cualquier entidad (Médicos, Pacientes, Especialidades, Obras Sociales, Consultorios).
+- **Usuarios:** Puede gestionar usuarios y asignar roles.
+- **Turnos:** Puede ver y administrar la agenda completa de todos los médicos.
+
+### 2. Administrativo
+**Alcance:** Operativo / Gestión diaria.
+- Diseñado para el personal de recepción o secretaría.
+- **Gestión:** Puede registrar y editar Pacientes y Médicos.
+- **Turnos:** Puede asignar, modificar y cancelar turnos para cualquier paciente y médico.
+- **Restricción:** No puede gestionar usuarios del sistema ni configuraciones sensibles (como borrar Obras Sociales).
+
+### 3. Medico
+**Alcance:** Personal / Agenda propia.
+- **Agenda:** Visualiza únicamente sus propios turnos asignados.
+- **Gestión de Turnos:** Puede cambiar el estado de sus turnos (ej. "Atendido", "Cancelado").
+- **Historias Clínicas:** Puede ver y registrar diagnósticos y tratamientos para los pacientes que atiende.
+- **Privacidad:** No tiene acceso a las agendas de otros colegas.
+
+### 4. Paciente
+**Alcance:** Personal / Autogestión.
+- **Mis Turnos:** Visualiza únicamente su propio historial de turnos.
+- **Solicitar Turno:** Acceso a la función de "Solicitud Inteligente" que busca automáticamente el médico con mayor disponibilidad para una especialidad y fecha dada.
+- **Datos:** Puede ver sus propios datos de contacto.
 
 ## Tecnologías
 - **Framework:** .NET 8 (ASP.NET Core MVC)
