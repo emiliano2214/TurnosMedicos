@@ -33,8 +33,16 @@ namespace TurnosMedicos.Controllers
             else if (User.IsInRole("Paciente")) rol = "Paciente";
             else if (User.IsInRole("Administrativo")) rol = "Administrativo";
 
-            var response = await _chatService.AskQuestionAsync(request.Pregunta, rol);
-            return Ok(response);
+            try
+            {
+                var response = await _chatService.AskQuestionAsync(request.Pregunta, rol);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Return the error detail to the frontend for debugging
+                return StatusCode(500, new { error = "Ocurrió un error en el servidor.", details = ex.Message });
+            }
         }
 
         public class ChatRequest
