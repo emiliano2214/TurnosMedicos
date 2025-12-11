@@ -46,6 +46,10 @@ namespace TurnosMedicos
             // 🔹 Servicio que ejecuta el procedimiento almacenado
             builder.Services.AddScoped<TurnosServicePa>();
 
+            // 🔹 Servicios de IA y Documentacion
+            builder.Services.AddScoped<TurnosMedicos.Repositories.IDocumentRepository, TurnosMedicos.Repositories.FileDocumentRepository>();
+            builder.Services.AddScoped<IIaChatService, IaChatService>();
+
             // 🔹 MVC
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpClient();
