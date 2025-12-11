@@ -1,0 +1,96 @@
+@{
+    ViewData["Title"] = "Asistente IA";
+}
+
+<div class="container mt-4">
+    <h2>Asistente Virtual TurnosMedicos</h2>
+    <p class="text-muted">Preguntame sobre reglas, turnos o pedime consultas SQL.</p>
+
+    <div class="card">
+        <div class="card-body" id="chat-box" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+            <!-- Mensajes van acá -->
+            <div class="text-center text-muted mt-5">Escribí tu consulta abajo...</div>
+        </div>
+        <div class="card-footer">
+            <div class="input-group">
+                <input type="text" id="user-input" class="form-control" placeholder="Escribí tu pregunta..." />
+                <button class="btn btn-primary" id="btn-send">Enviar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const btnSend = document.getElementById('btn-send');
+
+        btnSend.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        async function sendMessage() {
+            const text = userInput.value;
+            if (!text.trim()) return;
+
+            // Mostrar mensaje usuario
+            appendMessage('Usuario', text, 'text-end');
+            userInput.value = '';
+
+            // Loading
+            const loadingId = appendMessage('IA', 'Pensando...', 'text-start');
+
+            try {
+                const response = await fetch('/IA/Chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pregunta: text })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // data.raw_response contiene el JSON que devuelve el servicio Python
+                    // Por ahora lo mostramos directo, idealmente parsearíamos si el servicio devuelve JSON estructurado
+                    
+                    // Intentar parsear si viene como string JSON dentro de raw_response
+                    let content = data.raw_response;
+                    
+                    // Limpiar loading
+                    document.getElementById(loadingId).remove();
+                    
+                    appendMessage('IA', content, 'text-start', true);
+                } else {
+                    document.getElementById(loadingId).innerText = "Error: " + response.statusText;
+                }
+            } catch (error) {
+                document.getElementById(loadingId).innerText = "Error de conexión";
+            }
+        }
+
+        function appendMessage(sender, text, align, isHtml = false) {
+            const div = document.createElement('div');
+            div.className = `mb-2 ${align}`;
+            const id = 'msg-' + Date.now();
+            div.id = id;
+            
+            const bubble = document.createElement('div');
+            bubble.className = `d-inline-block p-2 rounded ${sender === 'Usuario' ? 'bg-primary text-white' : 'bg-white border'}`;
+            bubble.style.maxWidth = "80%";
+            
+            if (isHtml) {
+                // Convertir saltos de línea a <br> si es texto plano, o dejar si es HTML
+                // Como el LLM devuelve markdown/texto, podríamos usar una librería simple o pre
+                bubble.innerHTML = `<strong>${sender}:</strong> <pre style="white-space: pre-wrap; margin:0;">${text}</pre>`;
+            } else {
+                bubble.innerText = text;
+            }
+
+            div.appendChild(bubble);
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return id;
+        }
+    </script>
+}

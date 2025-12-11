@@ -88,6 +88,7 @@
             <aside class="sidebar">
                 <h5 class="mb-3">Secciones</h5>
                 <a asp-controller="Home" asp-action="Index">🏠 Inicio</a>
+                <a asp-controller="IA" asp-action="Index">🤖 Asistente IA</a>
                 
                 @* Staff (Admin/Administrativo) *@
                 @if (User.IsInRole("Admin") || User.IsInRole("Administrativo"))

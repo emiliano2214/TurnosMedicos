@@ -48,6 +48,7 @@ namespace TurnosMedicos
 
             // 🔹 MVC
             builder.Services.AddControllersWithViews();
+            builder.Services.AddHttpClient();
 
             var app = builder.Build();
 
