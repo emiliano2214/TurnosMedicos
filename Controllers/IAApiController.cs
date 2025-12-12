@@ -35,8 +35,36 @@ namespace TurnosMedicos.Controllers
 
             try
             {
-                var response = await _chatService.AskQuestionAsync(request.Pregunta, rol);
-                return Ok(response);
+                var iaResponse = await _chatService.AskQuestionAsync(request.Pregunta, rol);
+                
+                // Map to DTO
+                var dto = new TurnosMedicos.Models.Dto.ChatIaResponseDto
+                {
+                    RespuestaUsuario = iaResponse.Answer,
+                    SqlSugerido = iaResponse.SuggestedSql,
+                    
+                    // Populate Debug Info
+                    Debug = new TurnosMedicos.Models.Dto.DebugDto
+                    {
+                        Documentos = !string.IsNullOrWhiteSpace(iaResponse.Notes) 
+                            ? new System.Collections.Generic.List<string> { iaResponse.Notes } 
+                            : new System.Collections.Generic.List<string>(),
+                        ReglasAplicadas = iaResponse.RulesApplied,
+                        Confianza = iaResponse.ConfidenceScore,
+                        PromptFinal = "N/A (Local Rules)", // or construct if relevant
+                        MsRetrieval = iaResponse.RetrievalTimeMs,
+                        MsGeneracion = iaResponse.GenerationTimeMs
+                    }
+                };
+
+                // Filter for non-Admins
+                if (!User.IsInRole("Admin"))
+                {
+                    dto.Debug = null;
+                    dto.SqlSugerido = null; // Also hide SQL if not admin? User said "Solo Admin" for SQL too in "Solapa 2"
+                }
+
+                return Ok(dto);
             }
             catch (Exception ex)
             {

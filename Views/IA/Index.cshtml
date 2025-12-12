@@ -36,6 +36,8 @@
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
         const btnSend = document.getElementById('btn-send');
+        // Inject Role Status from Server
+        const IS_ADMIN = @(User.IsInRole("Admin").ToString().ToLower());
 
         btnSend.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', function (e) {
@@ -50,14 +52,14 @@
             if (!text.trim()) return;
 
             // User Message
-            appendMessage('Usuario', text, 'align-self-end bg-primary text-white');
+            appendUserMessage(text);
             userInput.value = '';
 
             // Loading
             const loadingId = appendLoading();
 
             try {
-                const response = await fetch('/api/ia/chat', { // Changed to new API endpoint
+                const response = await fetch('/api/ia/chat', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pregunta: text })
@@ -67,68 +69,173 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    // Render Answer
-                    if (data.answer) {
-                        appendMessage('IA', data.answer, 'align-self-start bg-light text-dark');
-                    }
-
-                    // Render Review (Notes)
-                    if (data.notes) {
-                        appendNote(data.notes);
-                    }
-
-                    // Render SQL
-                    if (data.suggestedSql) {
-                        appendSql(data.suggestedSql);
-                    }
-
+                    appendAiResponse(data);
                 } else {
-                    appendMessage('Sistema', "Error: " + response.statusText, 'align-self-center bg-danger text-white small');
+                    appendSystemMessage("Error: " + response.statusText);
                 }
             } catch (error) {
                 removeLoading(loadingId);
-                appendMessage('Sistema', "Error de conexión", 'align-self-center bg-danger text-white small');
+                appendSystemMessage("Error de conexión");
                 console.error(error);
             }
         }
 
-        function appendMessage(sender, text, classes) {
+        function appendUserMessage(text) {
             const div = document.createElement('div');
-            div.className = `p-3 rounded-3 ${classes}`;
+            div.className = "p-3 rounded-3 align-self-end bg-primary text-white";
             div.style.maxWidth = "80%";
             div.style.whiteSpace = "pre-wrap";
-            
-            // Bold sender only for AI/System
-            if (sender !== 'Usuario') {
-                div.innerHTML = `<strong>${sender}:</strong> ${text}`;
-            } else {
-                div.innerText = text;
-            }
-            
+            div.innerText = text;
             chatBox.appendChild(div);
             scrollToBottom();
-            return div;
         }
 
-        function appendSql(sql) {
+        function appendSystemMessage(text) {
             const div = document.createElement('div');
-            div.className = "align-self-start p-3 bg-dark text-warning rounded-3 font-monospace small mb-2";
-            div.style.maxWidth = "90%";
-            div.style.overflowX = "auto";
-            div.innerHTML = `<strong>SQL Sugerido:</strong><br><pre class="mb-0 mt-2">${sql}</pre>`;
+            div.className = "p-3 rounded-3 align-self-center bg-danger text-white small";
+            div.innerText = text;
             chatBox.appendChild(div);
             scrollToBottom();
         }
 
-        function appendNote(note) {
-             const div = document.createElement('div');
-            div.className = "align-self-start p-2 bg-info bg-opacity-10 text-info rounded-3 small mb-2";
-            div.style.maxWidth = "80%";
-            div.innerHTML = `<i class="bi bi-info-circle"></i> <em>${note}</em>`;
+        function appendAiResponse(data) {
+            const div = document.createElement('div');
+            div.className = "align-self-start w-100"; 
+            div.style.maxWidth = "90%"; // Slightly wider for tabs
+
+            // Generate Unique ID for Tabs
+            const uniqueId = "msg-" + Date.now();
+
+            let tabsHtml = '';
+            let contentHtml = '';
+
+            // --- TAB 1: RESPUESTA (Always Visible) ---
+            tabsHtml += `
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active py-1 px-3 small" id="tab-resp-${uniqueId}" data-bs-toggle="tab" data-bs-target="#content-resp-${uniqueId}" type="button" role="tab">
+                        Respuesta
+                    </button>
+                </li>
+            `;
+            contentHtml += `
+                <div class="tab-pane fade show active" id="content-resp-${uniqueId}" role="tabpanel">
+                    <div class="p-3 bg-light rounded-bottom border border-top-0 text-dark" style="white-space: pre-wrap;">${formatLinks(data.respuestaUsuario)}</div>
+                </div>
+            `;
+
+            // --- ADMIN TABS ---
+            if (IS_ADMIN) {
+                // TAB 2: ACCIONES / SQL
+                if (data.sqlSugerido) {
+                    tabsHtml += `
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link py-1 px-3 small" id="tab-sql-${uniqueId}" data-bs-toggle="tab" data-bs-target="#content-sql-${uniqueId}" type="button" role="tab">
+                                Acciones / SQL
+                            </button>
+                        </li>
+                    `;
+                    contentHtml += `
+                        <div class="tab-pane fade" id="content-sql-${uniqueId}" role="tabpanel">
+                            <div class="p-3 bg-white rounded-bottom border border-top-0">
+                                <div class="d-flex justify-content-end mb-2">
+                                     <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('${escapeHtml(data.sqlSugerido)}')">Copiar SQL</button>
+                                </div>
+                                <pre class="bg-dark text-warning p-3 rounded font-monospace small mb-0">${escapeHtml(data.sqlSugerido)}</pre>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // TAB 3: DEBUG
+                if (data.debug) {
+                    tabsHtml += `
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link py-1 px-3 small" id="tab-debug-${uniqueId}" data-bs-toggle="tab" data-bs-target="#content-debug-${uniqueId}" type="button" role="tab">
+                                Debug
+                            </button>
+                        </li>
+                    `;
+                    
+                    const debugContent = renderDebugContent(data.debug);
+                    contentHtml += `
+                        <div class="tab-pane fade" id="content-debug-${uniqueId}" role="tabpanel">
+                            <div class="p-3 bg-white rounded-bottom border border-top-0 small">
+                                ${debugContent}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Assemble Full HTML
+            div.innerHTML = `
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white p-0 border-bottom-0">
+                        <ul class="nav nav-tabs border-bottom" id="tabs-${uniqueId}" role="tablist">
+                            ${tabsHtml}
+                        </ul>
+                    </div>
+                    <div class="tab-content" id="content-${uniqueId}">
+                        ${contentHtml}
+                    </div>
+                </div>
+            `;
+
             chatBox.appendChild(div);
             scrollToBottom();
         }
+
+        function renderDebugContent(debug) {
+            if (!debug) return "Sin datos.";
+            
+            let html = '<ul class="list-unstyled mb-0">';
+            
+            // Metricas
+            html += `<li class="mb-2"><strong>Confianza:</strong> ${debug.confianza ?? 'N/A'}</li>`;
+            html += `<li class="mb-2"><strong>Retrieval:</strong> ${debug.msRetrieval ?? 0} ms | <strong>Gen:</strong> ${debug.msGeneracion ?? 0} ms</li>`;
+            
+            // Reglas
+            if (debug.reglasAplicadas && debug.reglasAplicadas.length > 0) {
+                 html += `<li class="mb-2"><strong>Reglas:</strong> <span class="badge bg-secondary">${debug.reglasAplicadas.join('</span> <span class="badge bg-secondary">')}</span></li>`;
+            }
+
+            // Docs
+            html += `<li class="mb-1"><strong>Documentos (Snippet):</strong></li>`;
+            if (debug.documentos && debug.documentos.length > 0) {
+                html += `<div class="bg-light p-2 rounded border" style="max-height: 150px; overflow-y: auto;">`;
+                debug.documentos.forEach(doc => {
+                    html += `<p class="mb-1 border-bottom pb-1">${doc}</p>`;
+                });
+                html += `</div>`;
+            } else {
+                 html += `<div class="text-muted fst-italic">Ninguno</div>`;
+            }
+
+            html += '</ul>';
+            return html;
+        }
+
+        function formatLinks(text) {
+             // Basic URL to link converter
+             return text.replace(/((http|https):\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+        }
+
+        function escapeHtml(text) {
+             if (!text) return "";
+             return text
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+        
+        // Expose copy function globally
+        window.copyToClipboard = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Optional: Toast or feedback
+            });
+        };
 
         function appendLoading() {
             const id = 'loading-' + Date.now();

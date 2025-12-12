@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace TurnosMedicos.Services
@@ -12,5 +13,12 @@ namespace TurnosMedicos.Services
         public string Answer { get; set; } = string.Empty;
         public string? SuggestedSql { get; set; }
         public string? Notes { get; set; }
+        
+        // Debug Info
+        public List<string> RulesApplied { get; set; } = new List<string>();
+        public double? ConfidenceScore { get; set; }
+        public long? RetrievalTimeMs { get; set; }
+        public long? GenerationTimeMs { get; set; }
+
     }
 }

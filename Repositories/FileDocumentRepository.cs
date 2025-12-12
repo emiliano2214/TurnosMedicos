@@ -23,19 +23,20 @@ namespace TurnosMedicos.Repositories
         {
             if (!Directory.Exists(_docsPath))
             {
-                return "No documentation found.";
+                return "";
             }
 
             var sb = new StringBuilder();
-            var files = Directory.GetFiles(_docsPath, "*.md");
+            // Recursive search for all .md files
+            var files = Directory.GetFiles(_docsPath, "*.md", SearchOption.AllDirectories);
 
             foreach (var file in files)
             {
                 var content = await File.ReadAllTextAsync(file);
-                sb.AppendLine($"--- Start of {Path.GetFileName(file)} ---");
+                // Requested format: ### Filename (with extension or path if needed, usually just filename is good enough)
+                sb.AppendLine($"### {Path.GetFileName(file)}");
                 sb.AppendLine(content);
-                sb.AppendLine($"--- End of {Path.GetFileName(file)} ---");
-                sb.AppendLine();
+                sb.AppendLine("\n\n");
             }
 
             return sb.ToString();
