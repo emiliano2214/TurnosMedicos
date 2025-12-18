@@ -39,6 +39,9 @@
         // Inject Role Status from Server
         const IS_ADMIN = @(User.IsInRole("Admin").ToString().ToLower());
 
+        // Load history on startup
+        document.addEventListener('DOMContentLoaded', loadHistory);
+
         btnSend.addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -46,6 +49,36 @@
                 sendMessage();
             }
         });
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/ia/history');
+                if (response.ok) {
+                    const messages = await response.json();
+                    
+                    // Clear welcome message if history exists
+                    if (messages && messages.length > 0) {
+                        chatBox.innerHTML = ''; 
+                        
+                        messages.forEach(msg => {
+                            if (msg.role === 'user') {
+                                appendUserMessage(msg.content);
+                            } else if (msg.role === 'assistant') {
+                                // Reuse appendAiResponse but with minimal data
+                                appendAiResponse({ 
+                                    respuestaUsuario: msg.content,
+                                    // Historial messages usually don't have suggested SQL or debug preserved in this simple implementation
+                                    sqlSugerido: null,
+                                    debug: null
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading history:", error);
+            }
+        }
 
         async function sendMessage() {
             const text = userInput.value;
@@ -216,8 +249,17 @@
         }
 
         function formatLinks(text) {
-             // Basic URL to link converter
-             return text.replace(/((http|https):\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+             if (!text) return "";
+             // 1. Convert Markdown links [Text](/Path) or [Text](https://...)
+             let formatted = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="fw-bold text-decoration-underline">$1</a>');
+
+             // 2. Basic URL to link converter (fallback for raw URLs not in markdown)
+             // We use a negative lookbehind (or check) to ensure it wasn't already converted
+             // Simpler approach: avoid double-linking. 
+             // Regex below finds http/https that are NOT preceded by href="
+             formatted = formatted.replace(/(?<!href=")(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+             
+             return formatted;
         }
 
         function escapeHtml(text) {

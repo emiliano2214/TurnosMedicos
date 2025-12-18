@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,22 +16,72 @@ namespace TurnosMedicos.Services
     public class IaChatService : IIaChatService
     {
         private readonly IDocumentRepository _docRepo;
+        private readonly TurnosMedicos.Data.ApplicationDbContext _context;
 
-        public IaChatService(IDocumentRepository docRepo)
+        public IaChatService(IDocumentRepository docRepo, TurnosMedicos.Data.ApplicationDbContext context)
         {
             _docRepo = docRepo;
+            _context = context;
         }
 
-        public async Task<IaResponse> AskQuestionAsync(string question, string userRole)
+        public async Task<List<TurnosMedicos.Models.ChatMessage>> GetChatHistoryAsync(string userId)
+        {
+             // 1. Get the latest session for the user
+             var session = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                 _context.ChatSessions
+                    .Include(s => s.Messages)
+                    .OrderByDescending(s => s.UpdatedAt), 
+                 s => s.UserId == userId);
+
+             if (session == null)
+             {
+                 return new List<TurnosMedicos.Models.ChatMessage>();
+             }
+
+             // 2. Return messages ordered by date
+             return session.Messages.OrderBy(m => m.CreatedAt).ToList();
+        }
+
+        public async Task<IaResponse> AskQuestionAsync(string question, string userId, string userRole)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var response = new IaResponse();
+            
+            // --- PERSISTENCE: Create/Get Session & Save User Message ---
+            // 1. Find or create session
+            var session = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                _context.ChatSessions, 
+                s => s.UserId == userId);
+            
+            if (session == null)
+            {
+                session = new TurnosMedicos.Models.ChatSession { UserId = userId };
+                _context.ChatSessions.Add(session);
+                await _context.SaveChangesAsync();
+            }
+
+            // 2. Save User Message
+            var userMsg = new TurnosMedicos.Models.ChatMessage
+            {
+                SessionId = session.Id,
+                Role = "user",
+                Content = question
+            };
+            _context.ChatMessages.Add(userMsg);
+            // Don't save yet, wait for response to save both? Or save now safe? 
+            // Better save now in case of crash? Or batch? 
+            // Batching is fine.
+            
             
             // Normalizar entrada
             if (string.IsNullOrWhiteSpace(question))
             {
                 response.Answer = "No recibí ninguna pregunta. Probá escribiendo algo como: \"¿Cómo saco un turno?\"";
                 response.RulesApplied.Add("Input Validation: Empty Question");
+                
+                // Save assistant empty response? Yes.
+                await SaveAssistantResponse(session, response.Answer);
+                
                 return response;
             }
 
@@ -57,11 +108,15 @@ namespace TurnosMedicos.Services
                 saludo.AppendLine("- \"¿Cómo saco un turno?\"");
                 saludo.AppendLine("- \"¿Qué roles hay en el sistema?\"");
                 saludo.AppendLine("- \"¿Qué puede hacer mi rol?\"");
+                saludo.AppendLine();
+                saludo.AppendLine("También podés ir directo a [Mis Turnos](/Turno/Index).");
 
                 response.Answer = saludo.ToString();
                 response.Notes = rag.Retrieve("casos de uso");
                 response.RulesApplied.Add("Regla: Saludos");
                 response.ConfidenceScore = 1.0;
+                
+                await SaveAssistantResponse(session, response.Answer);
                 
                 sw.Stop();
                 response.GenerationTimeMs = sw.ElapsedMilliseconds;
@@ -74,9 +129,11 @@ namespace TurnosMedicos.Services
                 var respuesta = new StringBuilder();
                 respuesta.AppendLine("Para sacar un turno en el sistema:");
                 respuesta.AppendLine("1. Iniciá sesión con tu usuario y contraseña.");
-                respuesta.AppendLine("2. Entrá al menú \"Turnos\".");
+                respuesta.AppendLine("2. Entrá al menú [Turnos](/Turno/Index).");
                 respuesta.AppendLine("3. Elegí médico, especialidad y fecha disponible.");
                 respuesta.AppendLine("4. Confirmá el turno para que quede registrado.");
+                respuesta.AppendLine();
+                respuesta.AppendLine("O hacé click aquí: [Solicitar Turno](/Turno/Crear)");
 
                 if (userRole.Equals("Paciente", StringComparison.OrdinalIgnoreCase))
                 {
@@ -95,6 +152,8 @@ namespace TurnosMedicos.Services
                 response.RulesApplied.Add("Regla: Procedimiento Turnos");
                 response.ConfidenceScore = 0.95;
                 
+                await SaveAssistantResponse(session, response.Answer);
+                
                 sw.Stop();
                 response.GenerationTimeMs = sw.ElapsedMilliseconds;
                 return response;
@@ -105,10 +164,10 @@ namespace TurnosMedicos.Services
             {
                 var sb = new StringBuilder();
                 sb.AppendLine("En el sistema existen estos roles principales:");
-                sb.AppendLine("- Admin: administra usuarios, roles y configuraciones generales.");
+                sb.AppendLine("- Admin: [Administrar Usuarios](/Usuario/Index).");
                 sb.AppendLine("- Administrativo: gestiona pacientes, turnos, obras sociales y consultorios.");
-                sb.AppendLine("- Médico: puede ver sus turnos, historias clínicas y registrar atenciones.");
-                sb.AppendLine("- Paciente: puede ver su perfil y solicitar turnos.");
+                sb.AppendLine("- Médico: puede ver sus [Turnos](/Turno/Index) e historias clínicas.");
+                sb.AppendLine("- Paciente: puede ver su perfil y [Solicitar Turnos](/Turno/Crear).");
                 sb.AppendLine();
                 sb.AppendLine($"Tu rol actual es: {userRole}.");
 
@@ -116,6 +175,8 @@ namespace TurnosMedicos.Services
                 response.Notes = rag.Retrieve("roles permisos casos_de_uso");
                 response.RulesApplied.Add("Regla: Info Roles");
                 response.ConfidenceScore = 0.95;
+                
+                await SaveAssistantResponse(session, response.Answer);
                 
                 sw.Stop();
                 response.GenerationTimeMs = sw.ElapsedMilliseconds;
@@ -130,6 +191,8 @@ namespace TurnosMedicos.Services
                 response.Notes = rag.Retrieve("estados_turno reglas_negocio_turnos");
                 response.RulesApplied.Add("Regla: Estados Turno");
                 response.ConfidenceScore = 0.9;
+                
+                await SaveAssistantResponse(session, response.Answer);
                 
                 sw.Stop();
                 response.GenerationTimeMs = sw.ElapsedMilliseconds;
@@ -150,6 +213,8 @@ namespace TurnosMedicos.Services
                 response.RulesApplied.Add("Regla: Ayuda SQL");
                 response.ConfidenceScore = 0.85;
                 
+                await SaveAssistantResponse(session, response.Answer);
+                
                 sw.Stop();
                 response.GenerationTimeMs = sw.ElapsedMilliseconds;
                 return response;
@@ -164,6 +229,8 @@ namespace TurnosMedicos.Services
                 response.RulesApplied.Add("Regla: Detección Genérica Turno");
                 response.ConfidenceScore = 0.6;
                 
+                await SaveAssistantResponse(session, response.Answer);
+                
                 sw.Stop();
                 response.GenerationTimeMs = sw.ElapsedMilliseconds;
                 return response;
@@ -174,10 +241,12 @@ namespace TurnosMedicos.Services
 
             if (!string.IsNullOrWhiteSpace(retrieved))
             {
-                response.Answer = "Encontré información relacionada en la documentación interna. A continuación te muestro un resumen:";
-                response.Notes = retrieved;
+                response.Answer = "Encontré información relacionada en la documentación interna:\n\n" + retrieved;
+                response.Notes = "Fuente: RAG Search"; // Move metadata to Notes
                 response.RulesApplied.Add("Fallback: RAG Search");
                 response.ConfidenceScore = 0.5; // Aproximado
+                
+                await SaveAssistantResponse(session, response.Answer);
                 
                 sw.Stop();
                 response.GenerationTimeMs = sw.ElapsedMilliseconds;
@@ -190,9 +259,24 @@ namespace TurnosMedicos.Services
             response.RulesApplied.Add("Fallback: No Match");
             response.ConfidenceScore = 0.0;
             
+            await SaveAssistantResponse(session, response.Answer);
+            
             sw.Stop();
             response.GenerationTimeMs = sw.ElapsedMilliseconds;
             return response;
+        }
+
+        private async Task SaveAssistantResponse(TurnosMedicos.Models.ChatSession session, string content)
+        {
+             var aiMsg = new TurnosMedicos.Models.ChatMessage
+             {
+                 SessionId = session.Id,
+                 Role = "assistant",
+                 Content = content
+             };
+             _context.ChatMessages.Add(aiMsg);
+             session.UpdatedAt = DateTime.Now;
+             await _context.SaveChangesAsync();
         }
 
         // ==========================
@@ -252,25 +336,41 @@ namespace TurnosMedicos.Services
                     return null;
 
                 var q = query.ToLowerInvariant();
-                var keywords = q.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                                .Where(w => w.Length > 3)
+                
+                // Stop words common in user queries but low value for precise search
+                var stopWords = new HashSet<string> { "como", "crear", "nuevo", "nueva", "modificar", "eliminar", "ver", "listado", "hacer", "quiero", "para", "donde" };
+
+                var allKeywords = q.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                                .Where(w => w.Length > 2)
                                 .Distinct()
-                                .Take(5)
                                 .ToList();
 
-                if (!keywords.Any())
+                // 1. Try to find keywords that are NOT stop words (e.g. "consultorio", "especialidad")
+                var meaningfulKeywords = allKeywords.Where(k => !stopWords.Contains(k)).ToList();
+
+                // If no meaningful keywords found, fallback to all > 2 chars
+                var keywordsToSearch = meaningfulKeywords.Any() ? meaningfulKeywords : allKeywords;
+
+                if (!keywordsToSearch.Any())
                     return null;
 
                 var sb = new StringBuilder();
+                var addedsnippets = new HashSet<string>();
 
-                foreach (var key in keywords)
+                foreach (var key in keywordsToSearch)
                 {
-                    var snippet = ExtraerParrafo(_context, key, 400);
+                    // Reduced radius to avoid noise (200 chars)
+                    var snippet = ExtraerParrafo(_context, key, 200);
                     if (!string.IsNullOrWhiteSpace(snippet))
                     {
-                        sb.AppendLine($"• Coincidencia por \"{key}\":");
-                        sb.AppendLine(snippet.Trim());
-                        sb.AppendLine();
+                        // Simple deduplication check
+                        if (!addedsnippets.Any(s => s.Contains(snippet) || snippet.Contains(s)))
+                        {
+                             sb.AppendLine($"• Coincidencia por \"{key}\":");
+                             sb.AppendLine(snippet.Trim());
+                             sb.AppendLine();
+                             addedsnippets.Add(snippet);
+                        }
                     }
                 }
 

@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using TurnosMedicos.Models;
+
 namespace TurnosMedicos.Services
 {
     public interface IIaChatService
     {
-        Task<IaResponse> AskQuestionAsync(string question, string userRole);
+        Task<IaResponse> AskQuestionAsync(string question, string userId, string userRole);
+        Task<List<ChatMessage>> GetChatHistoryAsync(string userId);
     }
 
     public class IaResponse

@@ -20,6 +20,8 @@ namespace TurnosMedicos.Data
         public DbSet<Tratamiento> Tratamiento { get; set; }
         public DbSet<Consultorio> Consultorio { get; set; }
         public DbSet<ObraSocial> ObraSocial { get; set; }
+        public DbSet<ChatSession> ChatSessions { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -18,6 +18,19 @@ namespace TurnosMedicos.Controllers
             _chatService = chatService;
         }
 
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var history = await _chatService.GetChatHistoryAsync(userId);
+            
+            // Map to simple DTO if needed, or return entities directly if no cycles/sensitive data
+            // ChatMessage is simple enough.
+            return Ok(history);
+        }
+
         [HttpPost("chat")]
         public async Task<IActionResult> Chat([FromBody] ChatRequest request)
         {
@@ -25,6 +38,9 @@ namespace TurnosMedicos.Controllers
             {
                 return BadRequest("La pregunta es requerida.");
             }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
             // Determine role
             var rol = "Usuario";
@@ -35,7 +51,7 @@ namespace TurnosMedicos.Controllers
 
             try
             {
-                var iaResponse = await _chatService.AskQuestionAsync(request.Pregunta, rol);
+                var iaResponse = await _chatService.AskQuestionAsync(request.Pregunta, userId, rol);
                 
                 // Map to DTO
                 var dto = new TurnosMedicos.Models.Dto.ChatIaResponseDto
